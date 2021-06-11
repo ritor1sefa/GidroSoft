@@ -1,4 +1,4 @@
-#pragma warning disable
+﻿#pragma warning disable
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Networking;
@@ -74,11 +74,13 @@ namespace MaxyGames.Generated {
 			string _Zday = "";
 			string _today = "";
 			string _t_index = "";
-			string _t_year = "";
+			int _t_year = 0;
 			int _t_month = 0;
 			string tmps = "";
 			string _link_key = "";
+			int curYear = 0;
 			linksDictArray.Clear();
+			curYear = System.DateTime.Now.Year;
 			curMonth = System.DateTime.Now.Month;
 			_today = System.DateTime.Now.Day.ToString();
 			_base = "";
@@ -92,24 +94,24 @@ namespace MaxyGames.Generated {
 					_link_index = _base.Replace("$id", _t_index);
 					//set year
 					foreach(string loopObject2 in _yearArray()) {
-						_t_year = loopObject2;
-						_link_year = _link_index.Replace("$year", _t_year);
+						_t_year = int.Parse(loopObject2);
+						_link_year = _link_index.Replace("$year", _t_year.ToString());
 						//set month
-						if(!((int.Parse(_t_year) < System.DateTime.Now.Year))) {
+						if(!((_t_year < System.DateTime.Now.Year))) {
 							_monthMax = (curMonth + 1);
 						}
 						for(int index = 1; index < _monthMax; index += 1) {
 							_t_month = index;
 							_link_month = _link_year.Replace("$month", _t_month.ToString());
 							//set last day in month
-							if((curMonth == _t_month)) {
+							if(((curYear == _t_year) && (curMonth == _t_month))) {
 								_Zday = _today;
 							} else {
-								_Zday = System.DateTime.DaysInMonth(int.Parse(_t_year), _t_month).ToString();
+								_Zday = System.DateTime.DaysInMonth(_t_year, _t_month).ToString();
 							}
 							_link_day_value = _link_month.Replace("$Zday", _Zday);
 							//add link to dictionary array
-							linksDictArray.Add(_t_index + "_" + _t_year + "_" + _t_month.ToString(), _link_day_value);
+							linksDictArray.Add(_t_index + "_" + _t_year.ToString() + "_" + _t_month.ToString(), _link_day_value);
 						}
 					}
 				}
@@ -118,6 +120,9 @@ namespace MaxyGames.Generated {
 			yield break;
 		}
 
+		/// <summary>
+		/// Get data from input field
+		/// </summary>
 		public List<string> _indexArray() {
 			List<string> data_index = new List<string>();
 			int variable1 = 0;
@@ -130,6 +135,9 @@ namespace MaxyGames.Generated {
 			return data_index;
 		}
 
+		/// <summary>
+		/// Get data from input field
+		/// </summary>
 		public List<string> _yearArray() {
 			List<string> data_year = null;
 			string year_2_parse = "";
@@ -193,6 +201,9 @@ namespace MaxyGames.Generated {
 			return data_year;
 		}
 
+		/// <summary>
+		/// Создание списка ссылок действительно нуждающихся в скачивании. 
+		/// </summary>
 		public void DownloadGeneration() {
 			string _t_index1 = "";
 			string _t_year1 = "";
@@ -221,6 +232,9 @@ namespace MaxyGames.Generated {
 			_switch = "DownloadGeneration";
 		}
 
+		/// <summary>
+		/// Проверка на уже существующие файлы.  + перескачивание последнего из уже ранее скачанных месяцев-файлов
+		/// </summary>
 		public System.Collections.IEnumerator _filesCheck() {
 			DirectoryInfo[] _dirs = new DirectoryInfo[0];
 			FileInfo[] _files = new FileInfo[0];
@@ -254,6 +268,9 @@ namespace MaxyGames.Generated {
 			yield break;
 		}
 
+		/// <summary>
+		/// Тут будет скачивание.
+		/// </summary>
 		public System.Collections.IEnumerator DownLoadFiles() {
 			yield break;
 		}
