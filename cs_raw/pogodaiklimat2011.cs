@@ -1,4 +1,4 @@
-﻿#pragma warning disable
+#pragma warning disable
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Networking;
@@ -15,6 +15,7 @@ namespace MaxyGames.Generated {
 		public string _folderAsIndex = "";
 		public string _filesInFolders = "";
 		public Dictionary<string, string> linksToDownload = new Dictionary<string, string>();
+		public bool TryAgain = false;
 
 		public void StartPogodaklimat2011() {
 			base.StartCoroutine(_function_group());
@@ -22,6 +23,8 @@ namespace MaxyGames.Generated {
 
 		public System.Collections.IEnumerator _function_group() {
 			float timelimit = 0.2F;
+			WaitForSeconds variable11 = null;
+			int variable2 = 0;
 			base.StartCoroutine(_filesCheck());
 			yield return new WaitForSeconds(timelimit);
 			base.StartCoroutine(LoadFromConfig());
@@ -33,7 +36,19 @@ namespace MaxyGames.Generated {
 					DownloadGeneration();
 					yield return new WaitForSeconds(timelimit);
 					if(_switch.Equals("DownloadGeneration")) {
-						base.StartCoroutine(DownLoadFiles());
+						do {
+							_switch = "";
+							if((variable2 > 3F)) {
+								Debug.Log("Не скачивается!");
+								yield break;
+							} else {
+								base.StartCoroutine(DownLoadFiles());
+								yield return new WaitUntil(() => _switch == "DownLoadFiles");
+								variable2 = (variable2 + 1);
+								Debug.Log("итерация");
+							}
+						} while(TryAgain);
+						Debug.Log("скачано всё");
 					} else {
 						Debug.Log("DownloadGeneration -> завис??");
 					}
@@ -272,6 +287,53 @@ namespace MaxyGames.Generated {
 		/// Тут будет скачивание.
 		/// </summary>
 		public System.Collections.IEnumerator DownLoadFiles() {
+			string _key1 = "";
+			string _v_link = "";
+			string folder_path = "";
+			UnityWebRequest uwr = null;
+			string file_path = "";
+			Stream _file = null;
+			int CountTry = 0;
+			TryAgain = false;
+			UnityWebRequest.ClearCookieCache();
+			foreach(KeyValuePair<string, string> loopObject8 in linksToDownload) {
+				_key1 = loopObject8.Key;
+				_v_link = loopObject8.Value;
+				folder_path = Application.streamingAssetsPath + "\\files\\pogodaiklimat2011\\" + _key1.Split(new char[] { '_' })[0];
+				if(!(Directory.Exists(folder_path))) {
+					Directory.CreateDirectory(folder_path);
+				}
+				using(UnityWebRequest value = UnityWebRequest.Get(_v_link)) {
+					uwr = value;
+					//wait up to one second to download the image
+					uwr.timeout = 1;
+					uwr.SendWebRequest();
+					while(!(uwr.isDone)) {
+						if((uwr.downloadedBytes > 0UL)) {
+							yield return new WaitForEndOfFrame();
+						}
+					}
+					yield return new WaitForSeconds(1F);
+					if((uwr.result == UnityWebRequest.Result.Success)) {
+						file_path = folder_path + "\\" + _key1 + ".html";
+						_file = File.Open(file_path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+						yield return _file;
+						_file.Close();
+						File.WriteAllText(file_path, uwr.downloadHandler.text);
+						Debug.Log("Скачан: " + _key1);
+					} else {
+						Debug.Log(uwr.result.ToString() + ":! " + uwr.error + " | " + _key1);
+						TryAgain = true;
+						CountTry = (CountTry + 1);
+						if((CountTry > 3F)) {
+							_switch = "DownLoadFiles";
+							Debug.Log("Много не скачанных файлов");
+							yield break;
+						}
+					}
+				}
+			}
+			_switch = "DownLoadFiles";
 			yield break;
 		}
 	}
