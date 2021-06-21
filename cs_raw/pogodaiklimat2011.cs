@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine.Networking;
 using System.Text.RegularExpressions;
 using System.IO;
+using HtmlAgilityPack;
+using NPOI.XSSF.UserModel;
 
 namespace MaxyGames.Generated {
 	public class pogodaiklimat2011 : MaxyGames.RuntimeBehaviour {
@@ -18,7 +20,7 @@ namespace MaxyGames.Generated {
 		public bool TryAgain = false;
 
 		public void StartPogodaklimat2011() {
-			base.StartCoroutine(_function_group());
+			parse_();
 		}
 
 		public System.Collections.IEnumerator _function_group() {
@@ -335,6 +337,53 @@ namespace MaxyGames.Generated {
 			}
 			_switch = "DownLoadFiles";
 			yield break;
+		}
+
+		public void parse_() {
+			string data_ = " <body> <html>....</body> </html>";
+			string temp_left_row = "";
+			string temp_right_row = "";
+			int cnt_right = 0;
+			HtmlNodeCollection row_nodes_left = null;
+			HtmlNodeCollection row_nodes_right = null;
+			html_doc = new HtmlDocument();
+			full_tbl = new List<string>();
+			temp_left_tbl = new List<string>();
+			html_doc.LoadHtml(data_);
+			row_nodes_left = html_doc.DocumentNode.SelectNodes("//div[@class='archive-table-left-column']//tr");
+			//Обработка строк левой таблицы (время-дата)
+			for(int index3 = 0; index3 < row_nodes_left.Count; index3 += 1) {
+				temp_left_row = "";
+				//ячейки
+				foreach(HtmlNode loopObject9 in row_nodes_left[index3].SelectNodes("td")) {
+					temp_left_row = temp_left_row + "|" + loopObject9.InnerText;
+				}
+				temp_left_tbl.Add(temp_left_row.Substring(1));
+			}
+			row_nodes_right = html_doc.DocumentNode.SelectNodes("//div[@class='archive-table-wrap']//tr");
+			//контроль на совпадение количества строк в таблицах (а вдруг?) (должно получится 20)
+			if((temp_left_tbl.Count == row_nodes_right.Count)) {
+				//Обработка строк правой таблицы-данные
+				for(int index4 = 1; index4 < temp_left_tbl.Count; index4 += 1) {
+					cnt_right = index4;
+					temp_right_row = "";
+					//ячейки
+					foreach(HtmlNode loopObject10 in row_nodes_right[cnt_right].SelectNodes("td")) {
+						temp_right_row = temp_right_row + "|" + loopObject10.InnerText;
+					}
+					//итоговая таблица
+					full_tbl.Add(temp_left_tbl[cnt_right] + "|" + temp_right_row.Substring(1));
+				}
+				//просто проверка
+				foreach(string loopObject11 in full_tbl) {
+					foreach(string loopObject12 in loopObject11.Split(new char[] { '|' })) {
+						Debug.Log(loopObject12);
+					}
+					break;
+				}
+			} else {
+				Debug.Log("Количество строк не совпадает:" + temp_left_tbl.Count.ToString() + " vs " + row_nodes_right.Count.ToString());
+			}
 		}
 	}
 }
