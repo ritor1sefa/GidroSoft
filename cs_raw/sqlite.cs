@@ -1,4 +1,4 @@
-#pragma warning disable
+﻿#pragma warning disable
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
@@ -15,7 +15,9 @@ namespace MaxyGames.Generated {
 		public string dbname = "";
 
 		public void staaart() {
-			Debug.Log(InsertQueryTable("pogodaiklimat2011", "INSERT INTO \"" + "asd" + "\" (\"date\",\"wind_dir\",\"wind_speed\",\"vis_range\",\"phenomena\",\"cloudy\",\"T\",\"Td\",\"f\",\"Te\",\"Tes\",\"Comfort\",\"P\",\"Po\",\"Tmin\",\"Tmax\",\"R\",\"R24\",\"S\") VALUES (1522,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)", "asd"));
+			string variable01 = "";
+			Debug.Log(InsertQueryTable("pogodaiklimat2011", "INSERT OR IGNORE INTO \"" + "asd" + "\" (\"date\",\"wind_dir\",\"wind_speed\",\"vis_range\",\"phenomena\",\"cloudy\",\"T\",\"Td\",\"f\",\"Te\",\"Tes\",\"Comfort\",\"P\",\"Po\",\"Tmin\",\"Tmax\",\"R\",\"R24\",\"S\") VALUES (2020123021,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)", "asd"));
+			Debug.Log(GetLastDate("pogodaiklimat2011", "asd"));
 		}
 
 		private bool connect(string db_switch) {
@@ -78,10 +80,37 @@ namespace MaxyGames.Generated {
 			return tables;
 		}
 
+		public DateTime GetLastDate(string db, string tableName) {
+			DateTime _datetime = new DateTime();
+			if(connect(db)) {
+				dbcmd = dbconn.CreateCommand();
+				dbcmd.CommandText = "SELECT date FROM " + tableName + " ORDER BY date DESC LIMIT 1;";
+				reader = dbcmd.ExecuteReader();
+				reader.Read();
+				_datetime = DateTime.ParseExact(reader.GetValue(0).ToString(), "yyyyMMddHH", null);
+				closes();
+			}
+			return _datetime;
+		}
+
+		public List<string> GetAllDatetimeClmn(string db, string tableName) {
+			List<string> dates = null;
+			if(connect(db)) {
+				dbcmd = dbconn.CreateCommand();
+				dbcmd.CommandText = "SELECT date FROM " + tableName;
+				reader = dbcmd.ExecuteReader();
+				Debug.Log(reader.Read());
+				Debug.Log(reader.GetValue(0));
+				dates = reader.GetValue(0) as List<string>;
+				closes();
+			}
+			return new List<string>();
+		}
+
 		public void CreateNewTable(string db, string tableName) {
 			if(connect(db)) {
 				dbcmd = dbconn.CreateCommand();
-				dbcmd.CommandText = "CREATE TABLE " + tableName + " AS SELECT * FROM example";
+				dbcmd.CommandText = "CREATE TABLE \"" + tableName + "\" (\"date\" NUM PRIMARY KEY  NOT NULL  DEFAULT (null) ,\"wind_dir\" CHAR,\"wind_speed\" CHAR,\"vis_range\" CHAR,\"phenomena\" VARCHAR,\"cloudy\" VARCHAR,\"T\" CHAR,\"Td\" CHAR,\"f\" CHAR,\"Te\" CHAR,\"Tes\" CHAR,\"Comfort\" VARCHAR,\"P\" CHAR,\"Po\" CHAR,\"Tmin\" CHAR,\"Tmax\" CHAR,\"R\" CHAR,\"R24\" CHAR,\"S\" CHAR)";
 				reader = dbcmd.ExecuteReader();
 				closes();
 			}
