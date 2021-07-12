@@ -82,29 +82,38 @@ namespace MaxyGames.Generated {
 
 		public DateTime GetLastDate(string db, string tableName) {
 			DateTime _datetime = new DateTime();
+			_datetime = DateTime.ParseExact("2011010100", "yyyyMMddHH", null);
 			if(connect(db)) {
-				dbcmd = dbconn.CreateCommand();
-				dbcmd.CommandText = "SELECT date FROM " + tableName + " ORDER BY date DESC LIMIT 1;";
-				reader = dbcmd.ExecuteReader();
-				reader.Read();
-				_datetime = DateTime.ParseExact(reader.GetValue(0).ToString(), "yyyyMMddHH", null);
-				closes();
+				if(sqlite_master_tables(db).Contains(tableName)) {
+					dbcmd = dbconn.CreateCommand();
+					dbcmd.CommandText = "SELECT date FROM '" + tableName + "' ORDER BY date DESC LIMIT 1;";
+					using(IDataReader value = dbcmd.ExecuteReader()) {
+						reader = value;
+						if(reader.Read()) {
+							_datetime = DateTime.ParseExact(reader.GetValue(0).ToString(), "yyyyMMddHH", null);
+						}
+						closes();
+					}
+				}
+			} else {
+				CreateNewTable(db, tableName);
 			}
 			return _datetime;
 		}
 
-		public List<string> GetAllDatetimeClmn(string db, string tableName) {
-			List<string> dates = null;
+		public string GetAllDatetimeClmn(string db, string tableName) {
+			string dates = "2011010100";
 			if(connect(db)) {
 				dbcmd = dbconn.CreateCommand();
-				dbcmd.CommandText = "SELECT date FROM " + tableName;
+				dbcmd.CommandText = "select group_concat(date, ',') from " + tableName;
 				reader = dbcmd.ExecuteReader();
-				Debug.Log(reader.Read());
-				Debug.Log(reader.GetValue(0));
-				dates = reader.GetValue(0) as List<string>;
+				reader.Read();
+				if(!(reader.IsDBNull(0))) {
+					dates = reader.GetValue(0) as string;
+				}
 				closes();
 			}
-			return new List<string>();
+			return dates;
 		}
 
 		public void CreateNewTable(string db, string tableName) {
@@ -121,8 +130,8 @@ namespace MaxyGames.Generated {
 			if(connect(db)) {
 				dbcmd = dbconn.CreateCommand();
 				dbcmd.CommandText = query;
-				using(IDataReader value = dbcmd.ExecuteReader()) {
-					reader = value;
+				using(IDataReader value1 = dbcmd.ExecuteReader()) {
+					reader = value1;
 					variable0 = reader.RecordsAffected;
 					closes();
 				}
@@ -135,6 +144,22 @@ namespace MaxyGames.Generated {
 				CreateNewTable(db, table_name);
 			}
 			return InsertQuerySimple(db, query);
+		}
+
+		public string NewFunctionTestt(string parameter) {
+			if(string.IsNullOrEmpty(parameter)) {
+				Debug.Log("\"parametr\" Null!!");
+				return "\"parametr\" Null!!";
+			} else {
+				Debug.Log("\"parametr\" NOT Null!!");
+				return "\"parametr\" NOT Null!!";
+			}
+		}
+
+		public void Update() {
+			if(Input.GetKeyUp(KeyCode.LeftArrow)) {
+				GetAllDatetimeClmn("pogodaiklimat2011", "example");
+			}
 		}
 	}
 }
