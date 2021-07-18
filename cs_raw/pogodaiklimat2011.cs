@@ -23,25 +23,31 @@ namespace MaxyGames.Generated {
 		private string _link_base = "";
 
 		public void StartPogodaklimat2011() {
-			base.StartCoroutine(_function_group());
+			if((_tryGetSiteSize("www.google.com") > 0F)) {
+				base.StartCoroutine(_function_group());
+			} else {
+				Debug.Log("Интернет не работает?");
+			}
 		}
 
 		public System.Collections.IEnumerator _function_group() {
-			float timelimit = 0.2F;
+			float timelimit = 0.1F;
 			WaitForSeconds variable11 = null;
 			int variable2 = 0;
 			base.StartCoroutine(LoadFromConfig());
 			yield return new WaitForSeconds(timelimit);
 			if(_switch.Equals("LoadFromConfig")) {
+				Debug.Log("LinkGen start at: " + Time.realtimeSinceStartup.ToString());
 				base.StartCoroutine(LinkGeneration());
 				yield return new WaitForSeconds(timelimit);
+				Debug.Log("LinkGen end at: " + Time.realtimeSinceStartup.ToString());
 				if(_switch.Equals("LinkGeneration")) {
 					base.StartCoroutine(DownLoadFiles());
 					yield return new WaitUntil(() => _switch == "DownLoadFiles");
 					variable2 = (variable2 + 1);
 					Debug.Log("итерация");
 				} else {
-					Debug.Log("DownloadGeneration -> завис??");
+					Debug.Log("LinkGeneration -> завис??");
 				}
 			} else {
 				Debug.Log("LoadFromConfig > 0.2 sec!!!");
@@ -82,7 +88,8 @@ namespace MaxyGames.Generated {
 			curYear = System.DateTime.Now.Year;
 			curMonth = System.DateTime.Now.Month;
 			if(string.IsNullOrEmpty(linkFromConfig.Value)) {
-				Debug.Log("pogodaiklimat2011 в конфиге нету!");
+				_switch = "LinkGeneration";
+				yield break;
 			} else {
 				_link_base = linkFromConfig.Value;
 				//id=index
@@ -122,6 +129,8 @@ namespace MaxyGames.Generated {
 									}
 									_link_Final = _link_Final.Replace("$LastDay", _LastDay);
 									linksToDownload.Add(_link_Final, _link_Index);
+									Debug.Log("добавлена строка at: " + Time.realtimeSinceStartup.ToString());
+									new WaitForEndOfFrame();
 								}
 							}
 						}
@@ -196,7 +205,6 @@ namespace MaxyGames.Generated {
 			} else {
 				foreach(string loopObject4 in Regex.Split(year_2_parse, "\\D", RegexOptions.Multiline)) {
 					if(((int.TryParse(loopObject4, out _year_casual) && (_year_casual > 2010F)) && (_year_casual < curYearPlus1))) {
-						Debug.Log(_year_casual);
 						data_year.Add(_year_casual.ToString());
 					}
 				}
@@ -211,6 +219,26 @@ namespace MaxyGames.Generated {
 			return data_year;
 		}
 
+		public float _tryGetSiteSize(string url) {
+			UnityWebRequest conn = null;
+			float r = 0F;
+			Debug.Log("старт проверки размера сайта at: " + Time.realtimeSinceStartup.ToString());
+			conn = UnityWebRequest.Get(url);
+			conn.SetRequestHeader("Accept-Encoding", "gzip, deflate");
+			conn.timeout = 3;
+			conn.SendWebRequest();
+			while(!(conn.isDone)) {
+				new WaitForEndOfFrame();
+			}
+			if(float.TryParse(conn.GetResponseHeader("Content-Length"), out r)) {
+				Debug.Log("конец проверки размера at: " + Time.realtimeSinceStartup.ToString());
+				return r;
+			} else {
+				Debug.Log("tryGetFileSize: " + conn.GetResponseHeader("Content-Length") + "_" + url);
+			}
+			return -1;
+		}
+
 		/// <summary>
 		/// Тут будет скачивание.
 		/// </summary>
@@ -222,14 +250,44 @@ namespace MaxyGames.Generated {
 			string file_path = "";
 			Stream _file = null;
 			int CountTry = 0;
-			while(!(parse_())) {
-				yield return new WaitForEndOfFrame();
+			float site_size = 0F;
+			TryAgain = false;
+			UnityWebRequest.ClearCookieCache();
+			Debug.Log("старт скачивания at: " + Time.realtimeSinceStartup.ToString());
+			_w_link = "http://www.pogodaiklimat.ru/weather.php?id=34945&bday=1&fday=28&amonth=11&ayear=2011&bot=2";
+			using(UnityWebRequest value = UnityWebRequest.Get(_w_link)) {
+				uwr = value;
+				//wait up to one second to download the image
+				uwr.timeout = 10;
+				site_size = _tryGetSiteSize(_w_link);
+				uwr.SendWebRequest();
+				while(!(uwr.isDone)) {
+					if((uwr.downloadedBytes > 0UL)) {
+						Debug.Log(((uwr.downloadedBytes / site_size) * 10F).ToString() + "%");
+						yield return new WaitForSeconds(0.1F);
+					}
+				}
+				Debug.Log("скачан сайт at: " + Time.realtimeSinceStartup.ToString());
+				yield return new WaitForSeconds(1F);
+				if((uwr.result == UnityWebRequest.Result.Success)) {
+					while(!(parse_(uwr.downloadHandler.text))) {
+						Debug.Log("Тайм.Тайм: " + Time.time.ToString());
+						yield return new WaitForSeconds(0.1F);
+					}
+				} else {
+					Debug.Log(uwr.result.ToString() + ":! " + uwr.error + " | " + _index1);
+					TryAgain = true;
+					CountTry = (CountTry + 1);
+					if((CountTry > 3F)) {
+						_switch = "DownLoadFiles";
+						Debug.Log("Много не скачанных файлов");
+						yield break;
+					}
+				}
 			}
-			yield break;
 		}
 
-		public bool parse_() {
-			string data_ = "data";
+		public bool parse_(string data) {
 			HtmlDocument html_doc = null;
 			List<string> temp_left_tbl_strArr = null;
 			string temp_left_row_str = "";
@@ -240,7 +298,7 @@ namespace MaxyGames.Generated {
 			html_doc = new HtmlDocument();
 			full_tbl_strArr = new List<string>();
 			temp_left_tbl_strArr = new List<string>();
-			html_doc.LoadHtml(data_);
+			html_doc.LoadHtml(data);
 			row_left_nodes = html_doc.DocumentNode.SelectNodes("//div[@class='archive-table-left-column']//tr");
 			//Обработка строк левой таблицы (время-дата)
 			for(int index4 = 0; index4 < row_left_nodes.Count; index4 += 1) {
