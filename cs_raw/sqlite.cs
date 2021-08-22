@@ -147,19 +147,12 @@ namespace MaxyGames.Generated {
 		}
 
 		public string NewFunctionTestt(string parameter) {
-			if(string.IsNullOrEmpty(parameter)) {
-				Debug.Log("\"parametr\" Null!!");
-				return "\"parametr\" Null!!";
-			} else {
-				Debug.Log("\"parametr\" NOT Null!!");
-				return "\"parametr\" NOT Null!!";
-			}
+			Debug.Log(parameter);
+			return "\"parametr\" NOT Null!!";
 		}
 
 		public void Update() {
-			if(Input.GetKeyUp(KeyCode.LeftArrow)) {
-				GetAllDatetimeClmn("pogodaiklimat2011", "example");
-			}
+			if(Input.GetKeyUp(KeyCode.LeftArrow)) {}
 		}
 	}
 }
