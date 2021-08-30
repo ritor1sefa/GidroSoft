@@ -128,7 +128,7 @@ namespace MaxyGames.Generated {
 										_LastDay = System.DateTime.DaysInMonth(_t_year, _t_month).ToString();
 									}
 									_link_Final = _link_Final.Replace("$LastDay", _LastDay);
-									linksToDownload.Add(_link_Final, _link_Index);
+									linksToDownload.Add(_link_Final, _t_index);
 								}
 							}
 						}
@@ -248,69 +248,77 @@ namespace MaxyGames.Generated {
 			Stream _file = null;
 			int CountTry = 0;
 			float site_size = 0F;
+			List<string> full_tbl_strArr = new List<string>();
 			TryAgain = false;
 			UnityWebRequest.ClearCookieCache();
-			Debug.Log("старт скачивания at: " + Time.realtimeSinceStartup.ToString());
-			_w_link = "http://www.pogodaiklimat.ru/weather.php?id=34945&bday=1&fday=28&amonth=11&ayear=2011&bot=2";
-			using(UnityWebRequest value = UnityWebRequest.Get(_w_link)) {
-				uwr = value;
-				//wait up to one second to download the image
-				uwr.timeout = 10;
-				site_size = _tryGetSiteSize(_w_link);
-				uwr.SendWebRequest();
-				while(!(uwr.isDone)) {
-					if((uwr.downloadedBytes > 0UL)) {
-						yield return new WaitForEndOfFrame();
+			foreach(KeyValuePair<string, string> loopObject5 in linksToDownload) {
+				_index1 = loopObject5.Value;
+				_w_link = loopObject5.Key;
+				using(UnityWebRequest value = UnityWebRequest.Get(_w_link)) {
+					uwr = value;
+					//wait up to one second to download the image
+					uwr.timeout = 10;
+					site_size = _tryGetSiteSize(_w_link);
+					uwr.SendWebRequest();
+					while(!(uwr.isDone)) {
+						if((uwr.downloadedBytes > 0UL)) {
+							yield return new WaitForEndOfFrame();
+						}
 					}
-				}
-				yield return new WaitForSeconds(0.1F);
-				if((uwr.result == UnityWebRequest.Result.Success)) {
-					Debug.Log("старт парса at: " + Time.realtimeSinceStartup.ToString());
-					while(!(parse_(uwr.downloadHandler.text))) {
-						yield return new WaitForSeconds(0.1F);
-					}
-					Debug.Log("конец парсинга at: " + Time.realtimeSinceStartup.ToString());
-				} else {
-					Debug.Log(uwr.result.ToString() + ":! " + uwr.error + " | " + _index1);
-					TryAgain = true;
-					CountTry = (CountTry + 1);
-					if((CountTry > 3F)) {
-						_switch = "DownLoadData";
-						Debug.Log("Много не скачанных файлов");
-						yield break;
+					yield return new WaitForSeconds(0.1F);
+					if((uwr.result == UnityWebRequest.Result.Success)) {
+						Debug.Log("старт парса at: " + Time.realtimeSinceStartup.ToString());
+						//Парсинг страницы в таблицу
+						full_tbl_strArr = parse_(uwr.downloadHandler.text);
+						Debug.Log("конец парсинга at: " + Time.realtimeSinceStartup.ToString());
+						if((full_tbl_strArr.Count > 0)) {
+							DBInserter(full_tbl_strArr, _index1);
+						}
+					} else {
+						Debug.Log(uwr.result.ToString() + ":! " + uwr.error + " | " + _index1);
+						TryAgain = true;
+						CountTry = (CountTry + 1);
+						if((CountTry > 3F)) {
+							_switch = "DownLoadData";
+							Debug.Log("Много не скачанных файлов");
+							yield break;
+						}
 					}
 				}
 			}
+			_switch = "DownLoadFiles";
+			Debug.Log("DownLoadFiles and at: " + Time.time.ToString());
+			yield break;
 		}
 
-		public bool parse_(string data) {
+		public List<string> parse_(string data) {
 			HtmlDocument html_doc = null;
 			List<string> temp_left_tbl_strArr = null;
 			string temp_left_row_str = "";
 			string temp_right_row_str = "";
-			List<string> full_tbl_strArr = null;
+			List<string> full_tbl_strArr1 = null;
 			HtmlNodeCollection row_left_nodes = null;
 			HtmlNodeCollection row_right_nodes = null;
 			string year = "";
 			string _t_date = "";
 			string _t_data = "";
 			html_doc = new HtmlDocument();
-			full_tbl_strArr = new List<string>();
+			full_tbl_strArr1 = new List<string>();
 			temp_left_tbl_strArr = new List<string>();
 			html_doc.LoadHtml(data);
 			//Парсинг год из заголовка
 			year = Regex.Match(html_doc.DocumentNode.SelectSingleNode("//title").InnerText, "\\d{4}").Value;
 			if(string.IsNullOrEmpty(year)) {
 				Debug.Log("_parse_year из head-tittle не распарсился");
-				return false;
+				return null;
 			}
 			row_left_nodes = html_doc.DocumentNode.SelectNodes("//div[@class='archive-table-left-column']//tr");
 			//Обработка строк левой таблицы (время-дата)
 			for(int index4 = 0; index4 < row_left_nodes.Count; index4 += 1) {
 				temp_left_row_str = "";
 				//ячейки
-				foreach(HtmlNode loopObject5 in row_left_nodes[index4].SelectNodes("td")) {
-					temp_left_row_str = temp_left_row_str + "." + loopObject5.InnerText;
+				foreach(HtmlNode loopObject6 in row_left_nodes[index4].SelectNodes("td")) {
+					temp_left_row_str = temp_left_row_str + "." + loopObject6.InnerText;
 				}
 				temp_left_tbl_strArr.Add(temp_left_row_str.Substring(1));
 			}
@@ -321,29 +329,23 @@ namespace MaxyGames.Generated {
 				for(int index5 = 1; index5 < temp_left_tbl_strArr.Count; index5 += 1) {
 					temp_right_row_str = "";
 					//ячейки
-					foreach(HtmlNode loopObject6 in row_right_nodes[index5].SelectNodes("td")) {
-						temp_right_row_str = temp_right_row_str + "|" + loopObject6.InnerText;
+					foreach(HtmlNode loopObject7 in row_right_nodes[index5].SelectNodes("td")) {
+						temp_right_row_str = temp_right_row_str + "|" + loopObject7.InnerText;
 					}
 					//ГодМесяцДеньЧас
 					_t_date = year + temp_left_tbl_strArr[index5].Split(new char[] { '.' })[2] + temp_left_tbl_strArr[index5].Split(new char[] { '.' })[1].PadLeft(2, '0') + temp_left_tbl_strArr[index5].Split(new char[] { '.' })[0];
 					//Строка целиком
 					_t_data = _t_date + "|" + temp_right_row_str.Substring(1);
-					full_tbl_strArr.Add(_t_data);
+					full_tbl_strArr1.Add(_t_data);
 				}
 			} else {
 				Debug.Log("Количество строк не совпадает:" + temp_left_tbl_strArr.Count.ToString() + " vs " + row_right_nodes.Count.ToString());
 			}
-			if((full_tbl_strArr.Count > 0)) {
-				NewFunction1(full_tbl_strArr);
-				return true;
-			} else {
-				return false;
-			}
+			return full_tbl_strArr1;
 		}
 
-		public void NewFunction1(List<string> table) {
-			string variable0 = "INSERT INTO \"example\" (\"date\",\"wind_dir\",\"wind_speed\",\"vis_range\",\"phenomena\",\"cloudy\",\"T\",\"Td\",\"f\",\"Te\",\"Tes\",\"Comfort\",\"P\",\"Po\",\"Tmin\",\"Tmax\",\"R\",\"R24\",\"S\") VALUES (1522,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)";
-			sqlite.GetComponent<sqlite>().NewFunctionTestt("2011112821|Ю|4|10 км|слаб. ливневой дождь|10/10 600 м[Cb cap]|+2.8|-0.9|77|-2|-2||1015.3|989.8||||| ");
+		public void DBInserter(List<string> full_tbl_strArr, string index) {
+			Debug.Log(sqlite.GetComponent<sqlite>().InsertQueryTable("pogodaiklimat2011", "INSERT INTO \"" + index + "\" (\"date\",\"wind_dir\",\"wind_speed\",\"vis_range\",\"phenomena\",\"cloudy\",\"T\",\"Td\",\"f\",\"Te\",\"Tes\",\"Comfort\",\"P\",\"Po\",\"Tmin\",\"Tmax\",\"R\",\"R24\",\"S\") " + "VALUES (\"" + string.Join<System.String>("\"),(\"", full_tbl_strArr).Replace("|", "\",\"") + "\")", index));
 		}
 	}
 }
