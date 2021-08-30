@@ -27,6 +27,7 @@ namespace MaxyGames.Generated {
 				base.StartCoroutine(_function_group());
 			} else {
 				Debug.Log("Интернет не работает?");
+				Debug.Log(_tryGetSiteSize("www.google.com"));
 			}
 		}
 
@@ -84,11 +85,13 @@ namespace MaxyGames.Generated {
 			int _t_year = 2011;
 			int _t_month = 0;
 			System.DateTime LastDatetimeInDB = new System.DateTime();
+			string _t_AllDatetimeClmn = "";
+			string _t_dateToCheck = "";
 			linksToDownload.Clear();
 			curYear = System.DateTime.Now.Year;
 			curMonth = System.DateTime.Now.Month;
 			if(string.IsNullOrEmpty(linkFromConfig.Value)) {
-				_switch = "LinkGeneration";
+				Debug.Log("ссылки из конфига всё таки нету");
 				yield break;
 			} else {
 				_link_base = linkFromConfig.Value;
@@ -96,25 +99,23 @@ namespace MaxyGames.Generated {
 				foreach(string loopObject1 in _indexArray()) {
 					_t_index = loopObject1;
 					_link_Index = _link_base.Replace("$id", _t_index);
-					LastDatetimeInDB = sqlite.GetComponent<sqlite>().GetLastDate(db, _t_index);
+					_t_AllDatetimeClmn = sqlite.GetComponent<sqlite>().GetAllDatetimeClmn(db, _t_index);
 					//set year
 					foreach(string loopObject2 in _yearArray()) {
 						if((int.Parse(loopObject2) <= curYear)) {
-							//set year (from last in bd to selected)
-							for(int index = LastDatetimeInDB.Year; index <= int.Parse(loopObject2); index += 1) {
-								_t_year = index;
-								_link_IndexAndYear = _link_Index.Replace("$year", _t_year.ToString());
+							_t_year = int.Parse(loopObject2);
+							_link_IndexAndYear = _link_Index.Replace("$year", _t_year.ToString());
+							if(_t_year.Equals(curYear)) {
 								//set month max
-								if(_t_year.Equals(curYear)) {
-									_monthMax = (curMonth + 1);
-								}
-								//set month min (based on data in bd)
-								if((LastDatetimeInDB.Year == _t_year)) {
-									_monthMin = LastDatetimeInDB.Month;
-								}
-								//set month links
-								for(int index1 = _monthMin; index1 < _monthMax; index1 += 1) {
-									_t_month = index1;
+								_monthMax = (curMonth + 1);
+							}
+							//set month links
+							for(int index = 1; index < _monthMax; index += 1) {
+								_t_month = index;
+								_t_dateToCheck = _t_year.ToString() + (_t_month.ToString("D2") as string) + System.DateTime.DaysInMonth(_t_year, _t_month).ToString();
+								if(_t_AllDatetimeClmn.Contains(_t_dateToCheck)) {
+									Debug.Log("LinkGeneration. Пропущено т.к. в бд уже есть этого месяца последний день:  " + _t_dateToCheck);
+								} else {
 									_link_Final = _link_IndexAndYear.Replace("$month", _t_month.ToString());
 									//set first day in month
 									if(((LastDatetimeInDB.Year == _t_year) && (LastDatetimeInDB.Month == _t_month))) {
@@ -129,12 +130,14 @@ namespace MaxyGames.Generated {
 									}
 									_link_Final = _link_Final.Replace("$LastDay", _LastDay);
 									linksToDownload.Add(_link_Final, _t_index);
+									Debug.Log(_link_Final);
 								}
 							}
 						}
 					}
 				}
 			}
+			//всё ок, идём дальше
 			_switch = "LinkGeneration";
 			yield break;
 		}
@@ -172,9 +175,9 @@ namespace MaxyGames.Generated {
 			if(year_2_parse.Contains("+")) {
 				if(int.TryParse(Regex.Replace(year_2_parse, ".*([0-9]{4})\\+.*", "$1", RegexOptions.Multiline, System.TimeSpan.FromMilliseconds(500D)), out _yearPlus)) {
 					if(((_yearPlus > 2010F) && (_yearPlus < curYearPlus1))) {
-						for(int index2 = _yearPlus; index2 < curYearPlus1; index2 += 1) {
-							data_year.Add(index2.ToString());
-							Debug.Log(index2);
+						for(int index1 = _yearPlus; index1 < curYearPlus1; index1 += 1) {
+							data_year.Add(index1.ToString());
+							Debug.Log(index1);
 						}
 						if((data_year.Capacity > 0)) {
 							return data_year;
@@ -192,9 +195,9 @@ namespace MaxyGames.Generated {
 				_year_from = int.Parse(_year_splited[0]);
 				_year_to = int.Parse(_year_splited[1]);
 				if((((_year_from > 2010F) && (_year_to < curYearPlus1)) && (_year_to > _year_from))) {
-					for(int index3 = _year_from; index3 <= _year_to; index3 += 1) {
-						data_year.Add(index3.ToString());
-						Debug.Log(index3);
+					for(int index2 = _year_from; index2 <= _year_to; index2 += 1) {
+						data_year.Add(index2.ToString());
+						Debug.Log(index2);
 					}
 					return data_year;
 				} else {
@@ -244,8 +247,6 @@ namespace MaxyGames.Generated {
 			string _w_link = "";
 			string folder_path = "";
 			UnityWebRequest uwr = null;
-			string file_path = "";
-			Stream _file = null;
 			int CountTry = 0;
 			float site_size = 0F;
 			List<string> full_tbl_strArr = new List<string>();
@@ -314,10 +315,10 @@ namespace MaxyGames.Generated {
 			}
 			row_left_nodes = html_doc.DocumentNode.SelectNodes("//div[@class='archive-table-left-column']//tr");
 			//Обработка строк левой таблицы (время-дата)
-			for(int index4 = 0; index4 < row_left_nodes.Count; index4 += 1) {
+			for(int index3 = 0; index3 < row_left_nodes.Count; index3 += 1) {
 				temp_left_row_str = "";
 				//ячейки
-				foreach(HtmlNode loopObject6 in row_left_nodes[index4].SelectNodes("td")) {
+				foreach(HtmlNode loopObject6 in row_left_nodes[index3].SelectNodes("td")) {
 					temp_left_row_str = temp_left_row_str + "." + loopObject6.InnerText;
 				}
 				temp_left_tbl_strArr.Add(temp_left_row_str.Substring(1));
@@ -326,14 +327,14 @@ namespace MaxyGames.Generated {
 			//контроль на совпадение количества строк в таблицах (а вдруг?) (должно получится 20)
 			if((temp_left_tbl_strArr.Count == row_right_nodes.Count)) {
 				//Обработка строк правой таблицы-данные
-				for(int index5 = 1; index5 < temp_left_tbl_strArr.Count; index5 += 1) {
+				for(int index4 = 1; index4 < temp_left_tbl_strArr.Count; index4 += 1) {
 					temp_right_row_str = "";
 					//ячейки
-					foreach(HtmlNode loopObject7 in row_right_nodes[index5].SelectNodes("td")) {
+					foreach(HtmlNode loopObject7 in row_right_nodes[index4].SelectNodes("td")) {
 						temp_right_row_str = temp_right_row_str + "|" + loopObject7.InnerText;
 					}
 					//ГодМесяцДеньЧас
-					_t_date = year + temp_left_tbl_strArr[index5].Split(new char[] { '.' })[2] + temp_left_tbl_strArr[index5].Split(new char[] { '.' })[1].PadLeft(2, '0') + temp_left_tbl_strArr[index5].Split(new char[] { '.' })[0];
+					_t_date = year + temp_left_tbl_strArr[index4].Split(new char[] { '.' })[2] + temp_left_tbl_strArr[index4].Split(new char[] { '.' })[1].PadLeft(2, '0') + temp_left_tbl_strArr[index4].Split(new char[] { '.' })[0];
 					//Строка целиком
 					_t_data = _t_date + "|" + temp_right_row_str.Substring(1);
 					full_tbl_strArr1.Add(_t_data);
@@ -345,7 +346,18 @@ namespace MaxyGames.Generated {
 		}
 
 		public void DBInserter(List<string> full_tbl_strArr, string index) {
-			Debug.Log(sqlite.GetComponent<sqlite>().InsertQueryTable("pogodaiklimat2011", "INSERT INTO \"" + index + "\" (\"date\",\"wind_dir\",\"wind_speed\",\"vis_range\",\"phenomena\",\"cloudy\",\"T\",\"Td\",\"f\",\"Te\",\"Tes\",\"Comfort\",\"P\",\"Po\",\"Tmin\",\"Tmax\",\"R\",\"R24\",\"S\") " + "VALUES (\"" + string.Join<System.String>("\"),(\"", full_tbl_strArr).Replace("|", "\",\"") + "\")", index));
+			Debug.Log(sqlite.GetComponent<sqlite>().InsertQueryTable(db, "REPLACE INTO \"" + index + "\" (\"date\",\"wind_dir\",\"wind_speed\",\"vis_range\",\"phenomena\",\"cloudy\",\"T\",\"Td\",\"f\",\"Te\",\"Tes\",\"Comfort\",\"P\",\"Po\",\"Tmin\",\"Tmax\",\"R\",\"R24\",\"S\") " + "VALUES (\"" + string.Join<System.String>("\"),(\"", full_tbl_strArr).Replace("|", "\",\"") + "\")", index));
+		}
+
+		public System.Collections.IEnumerator _t_writeToLog(string dataToLog) {
+			Stream fs = null;
+			string filePatch = "";
+			filePatch = "log_tmp.txt";
+			fs = File.Open("log_tmp.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+			fs.Close();
+			File.WriteAllText(filePatch, dataToLog);
+			Debug.Log("в файл залито.");
+			yield break;
 		}
 	}
 }
