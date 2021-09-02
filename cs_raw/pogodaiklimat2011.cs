@@ -18,9 +18,6 @@ namespace MaxyGames.Generated {
 		public MaxyGames.uNode.uNodeRuntime sqlite = null;
 		public string db = "pogodaiklimat2011";
 		public Dictionary<string, string> linksToDownload = new Dictionary<string, string>();
-		private int curYear = 0;
-		private int curMonth = 0;
-		private string _link_base = "";
 
 		public void StartPogodaklimat2011() {
 			if((_tryGetSiteSize("www.google.com") > 0F)) {
@@ -74,8 +71,11 @@ namespace MaxyGames.Generated {
 		}
 
 		public System.Collections.IEnumerator LinkGeneration() {
+			int curYear = 0;
+			int curMonth = 0;
 			int _monthMin = 1;
 			int _monthMax = 13;
+			string _link_base = "";
 			string _link_Index = "";
 			string _link_IndexAndYear = "";
 			string _link_Final = "";
@@ -99,9 +99,9 @@ namespace MaxyGames.Generated {
 				foreach(string loopObject1 in _indexArray()) {
 					_t_index = loopObject1;
 					_link_Index = _link_base.Replace("$id", _t_index);
-					_t_AllDatetimeClmn = sqlite.GetComponent<sqlite>().GetAllDatetimeClmn(db, _t_index);
 					//set year
 					foreach(string loopObject2 in _yearArray()) {
+						_t_AllDatetimeClmn = sqlite.GetComponent<sqlite>().GetAllDatetimeClmn(_t_index, loopObject2);
 						if((int.Parse(loopObject2) <= curYear)) {
 							_t_year = int.Parse(loopObject2);
 							_link_IndexAndYear = _link_Index.Replace("$year", _t_year.ToString());
@@ -266,14 +266,14 @@ namespace MaxyGames.Generated {
 							yield return new WaitForEndOfFrame();
 						}
 					}
-					yield return new WaitForSeconds(0.1F);
+					yield return new WaitForSeconds(0.2F);
 					if((uwr.result == UnityWebRequest.Result.Success)) {
 						Debug.Log("старт парса at: " + Time.realtimeSinceStartup.ToString());
 						//Парсинг страницы в таблицу
 						full_tbl_strArr = parse_(uwr.downloadHandler.text);
 						Debug.Log("конец парсинга at: " + Time.realtimeSinceStartup.ToString());
 						if((full_tbl_strArr.Count > 0)) {
-							DBInserter(full_tbl_strArr, _index1);
+							DBInserter(full_tbl_strArr, _index1, _w_link.Substring((_w_link.IndexOf("ayear=") + 6), 4));
 						}
 					} else {
 						Debug.Log(uwr.result.ToString() + ":! " + uwr.error + " | " + _index1);
@@ -345,8 +345,10 @@ namespace MaxyGames.Generated {
 			return full_tbl_strArr1;
 		}
 
-		public void DBInserter(List<string> full_tbl_strArr, string index) {
-			Debug.Log(sqlite.GetComponent<sqlite>().InsertQueryTable(db, "REPLACE INTO \"" + index + "\" (\"date\",\"wind_dir\",\"wind_speed\",\"vis_range\",\"phenomena\",\"cloudy\",\"T\",\"Td\",\"f\",\"Te\",\"Tes\",\"Comfort\",\"P\",\"Po\",\"Tmin\",\"Tmax\",\"R\",\"R24\",\"S\") " + "VALUES (\"" + string.Join<System.String>("\"),(\"", full_tbl_strArr).Replace("|", "\",\"") + "\")", index));
+		public void DBInserter(List<string> full_tbl_strArr, string indexDB, string table_year) {
+			string q = "";
+			q = "REPLACE INTO \"" + table_year + "\" (\"date\",\"wind_dir\",\"wind_speed\",\"vis_range\",\"phenomena\",\"cloudy\",\"T\",\"Td\",\"f\",\"Te\",\"Tes\",\"Comfort\",\"P\",\"Po\",\"Tmin\",\"Tmax\",\"R\",\"R24\",\"S\") " + "VALUES (\"" + string.Join<System.String>("\"),(\"", full_tbl_strArr).Replace("|", "\",\"") + "\")";
+			Debug.Log(sqlite.GetComponent<sqlite>().InsertQueryTable(indexDB, q));
 		}
 
 		public System.Collections.IEnumerator _t_writeToLog(string dataToLog) {

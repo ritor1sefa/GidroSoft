@@ -59,10 +59,10 @@ namespace MaxyGames.Generated {
 			dbconn = null;
 		}
 
-		public List<string> sqlite_master_tables(string db) {
+		public List<string> sqlite_master_tables(string db_index) {
 			List<string> tables = null;
 			tables = new List<string>();
-			if(connect1(db)) {
+			if(connect1(db_index)) {
 				dbcmd = dbconn.CreateCommand();
 				dbcmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table'";
 				reader = dbcmd.ExecuteReader();
@@ -74,13 +74,13 @@ namespace MaxyGames.Generated {
 			return tables;
 		}
 
-		public DateTime GetLastDate(string db, string tableName) {
+		public DateTime GetLastDate(string db_index, string tableName_year) {
 			DateTime _datetime = new DateTime();
 			_datetime = DateTime.ParseExact("2011010100", "yyyyMMddHH", null);
-			if(connect(db)) {
-				if(sqlite_master_tables(db).Contains(tableName)) {
+			if(connect(db_index)) {
+				if(sqlite_master_tables(db_index).Contains(tableName_year)) {
 					dbcmd = dbconn.CreateCommand();
-					dbcmd.CommandText = "SELECT date FROM '" + tableName + "' ORDER BY date DESC LIMIT 1;";
+					dbcmd.CommandText = "SELECT date FROM '" + tableName_year + "' ORDER BY date DESC LIMIT 1;";
 					using(IDataReader value = dbcmd.ExecuteReader()) {
 						reader = value;
 						if(reader.Read()) {
@@ -90,16 +90,17 @@ namespace MaxyGames.Generated {
 					}
 				}
 			} else {
-				CreateNewTable(db, tableName);
+				CreateNewTable(db_index, tableName_year);
 			}
 			return _datetime;
 		}
 
-		public string GetAllDatetimeClmn(string db, string tableName) {
+		public string GetAllDatetimeClmn(string db_index, string tableName_year) {
 			string dates = "2011010100";
-			if(connect(db)) {
+			CreateNewTable(db_index, tableName_year);
+			if(connect1(db_index)) {
 				dbcmd = dbconn.CreateCommand();
-				dbcmd.CommandText = "select group_concat(date, ',') from \"" + tableName + "\"";
+				dbcmd.CommandText = "select group_concat(date, ',') from \"" + tableName_year + "\"";
 				reader = dbcmd.ExecuteReader();
 				reader.Read();
 				if(!(reader.IsDBNull(0))) {
@@ -110,18 +111,18 @@ namespace MaxyGames.Generated {
 			return dates;
 		}
 
-		public void CreateNewTable(string db, string tableName) {
-			if(connect1(db)) {
+		public void CreateNewTable(string db_index, string tableName_year) {
+			if(connect1(db_index)) {
 				dbcmd = dbconn.CreateCommand();
-				dbcmd.CommandText = "CREATE TABLE IF NOT EXISTS \"" + tableName + "\"  (\"date_MMddHH\" CHAR PRIMARY KEY  NOT NULL  DEFAULT (null) ,\"wind_dir\" CHAR,\"wind_speed\" CHAR,\"vis_range\" CHAR,\"phenomena\" VARCHAR,\"cloudy\" VARCHAR,\"T\" CHAR,\"Td\" CHAR,\"f\" CHAR,\"Te\" CHAR,\"Tes\" CHAR,\"Comfort\" VARCHAR,\"P\" CHAR,\"Po\" CHAR,\"Tmin\" CHAR,\"Tmax\" CHAR,\"R\" CHAR,\"R24\" CHAR,\"S\" CHAR)";
+				dbcmd.CommandText = "CREATE TABLE IF NOT EXISTS \"" + tableName_year + "\"  (\"date\" CHAR PRIMARY KEY  NOT NULL  DEFAULT (null) ,\"wind_dir\" CHAR,\"wind_speed\" CHAR,\"vis_range\" CHAR,\"phenomena\" VARCHAR,\"cloudy\" VARCHAR,\"T\" CHAR,\"Td\" CHAR,\"f\" CHAR,\"Te\" CHAR,\"Tes\" CHAR,\"Comfort\" VARCHAR,\"P\" CHAR,\"Po\" CHAR,\"Tmin\" CHAR,\"Tmax\" CHAR,\"R\" CHAR,\"R24\" CHAR,\"S\" CHAR)";
 				reader = dbcmd.ExecuteReader();
 				closes();
 			}
 		}
 
-		private int InsertQuerySimple(string db, string query) {
+		private int InsertQuerySimple(string db_index, string query) {
 			int variable0 = 0;
-			if(connect1(db)) {
+			if(connect1(db_index)) {
 				dbcmd = dbconn.CreateCommand();
 				dbcmd.CommandText = query;
 				using(IDataReader value1 = dbcmd.ExecuteReader()) {
@@ -133,26 +134,26 @@ namespace MaxyGames.Generated {
 			return variable0;
 		}
 
-		public int InsertQueryTable(string db, string query) {
+		public int InsertQueryTable(string db_index, string query) {
 			string t_name = "";
 			t_name = query.Split(new char[] { '"' })[1];
-			if(!(sqlite_master_tables(db).Contains(t_name))) {
-				CreateNewTable(db, t_name);
+			if(!(sqlite_master_tables(db_index).Contains(t_name))) {
+				CreateNewTable(db_index, t_name);
 			}
-			return InsertQuerySimple(db, query);
+			return InsertQuerySimple(db_index, query);
 		}
 
 		public void Update() {
 			if(Input.GetKeyUp(KeyCode.LeftArrow)) {
-				Debug.Log(0);
+				Debug.Log("http://www.pogodaiklimat.ru/weather.php?id=34945&bday=1&fday=28&amonth=11&ayear=2011&bot=2".Substring(("http://www.pogodaiklimat.ru/weather.php?id=34945&bday=1&fday=28&amonth=11&ayear=2011&bot=2".IndexOf("ayear=") + 6), 4));
 			}
 		}
 
-		private bool connect1(string db_switch) {
+		private bool connect1(string db_index) {
 			string filepath1 = "";
 			//Запуск на пк
 			if((Application.platform != RuntimePlatform.Android)) {
-				filepath1 = "URI=file:" + Application.dataPath + "/StreamingAssets/" + "files/pogodaiklimat2011/" + db_switch + ".sqlite";
+				filepath1 = "URI=file:" + Application.dataPath + "/StreamingAssets/" + "files/pogodaiklimat2011/" + db_index + ".sqlite";
 			} else {
 				//			dbconn.Open(); //Open connection to the database.
 				//			dbconn = (IDbConnection)new SqliteConnection("URI=file:" + Application.persistentDataPath + dbname);
@@ -170,5 +171,7 @@ namespace MaxyGames.Generated {
 			dbconn.Open();
 			return true;
 		}
+
+		public void NewFunctionTestt() {}
 	}
 }
