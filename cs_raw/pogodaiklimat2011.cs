@@ -1,4 +1,4 @@
-#pragma warning disable
+﻿#pragma warning disable
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Networking;
@@ -14,10 +14,9 @@ namespace MaxyGames.Generated {
 		public UnityEngine.UI.InputField _index = null;
 		public UnityEngine.UI.InputField _year = null;
 		public string _switch = "";
-		public bool TryAgain = false;
+		public bool Pass = false;
 		public MaxyGames.uNode.uNodeRuntime sqlite = null;
 		public string db = "pogodaiklimat2011";
-		public Dictionary<string, string> linksToDownload = new Dictionary<string, string>();
 
 		public void StartPogodaklimat2011() {
 			if((_tryGetSiteSize("www.google.com") > 0F)) {
@@ -29,24 +28,26 @@ namespace MaxyGames.Generated {
 		}
 
 		public System.Collections.IEnumerator _function_group() {
-			float timelimit = 0.1F;
-			WaitForSeconds variable11 = null;
-			int variable2 = 0;
+			float timelimit = 0.2F;
+			int PassCount = 0;
+			Dictionary<string, string> DictLinks = new Dictionary<string, string>();
 			base.StartCoroutine(LoadFromConfig());
 			yield return new WaitForSeconds(timelimit);
 			if(_switch.Equals("LoadFromConfig")) {
-				Debug.Log("LinkGen start at: " + Time.realtimeSinceStartup.ToString());
-				base.StartCoroutine(LinkGeneration());
-				yield return new WaitForSeconds(timelimit);
-				Debug.Log("LinkGen end at: " + Time.realtimeSinceStartup.ToString());
-				if(_switch.Equals("LinkGeneration")) {
-					base.StartCoroutine(DownLoadData());
+				DictLinks = LinkGeneration();
+				while(!((DictLinks.Count == 0))) {
+					Debug.Log("Ссылок на скачивание создано: " + DictLinks.Count.ToString());
+					yield return new WaitForSeconds(timelimit);
+					base.StartCoroutine(DownLoadData(DictLinks));
 					yield return new WaitUntil(() => _switch == "DownLoadData");
-					variable2 = (variable2 + 1);
+					PassCount = (PassCount + 1);
 					Debug.Log("итерация");
-				} else {
-					Debug.Log("LinkGeneration -> завис??");
+					if((PassCount > 4)) {
+						Debug.Log("Пытался с качать уже " + PassCount.ToString() + " раза. Прервано");
+						yield break;
+					}
 				}
+				Debug.Log("LinkGeneration = 0");
 			} else {
 				Debug.Log("LoadFromConfig > 0.2 sec!!!");
 			}
@@ -64,13 +65,12 @@ namespace MaxyGames.Generated {
 			if(string.IsNullOrEmpty(linkFromConfig.Value)) {
 				Debug.Log("pogodaiklimat2011 нету!");
 			} else {
-				Debug.Log(linkFromConfig);
 				_switch = "LoadFromConfig";
 			}
 			yield break;
 		}
 
-		public System.Collections.IEnumerator LinkGeneration() {
+		public Dictionary<string, string> LinkGeneration() {
 			int curYear = 0;
 			int curMonth = 0;
 			int _monthMin = 1;
@@ -87,12 +87,11 @@ namespace MaxyGames.Generated {
 			System.DateTime LastDatetimeInDB = new System.DateTime();
 			string _t_AllDatetimeClmn = "";
 			string _t_dateToCheck = "";
-			linksToDownload.Clear();
+			Dictionary<string, string> DictLinks1 = new Dictionary<string, string>();
 			curYear = System.DateTime.Now.Year;
 			curMonth = System.DateTime.Now.Month;
 			if(string.IsNullOrEmpty(linkFromConfig.Value)) {
 				Debug.Log("ссылки из конфига всё таки нету");
-				yield break;
 			} else {
 				_link_base = linkFromConfig.Value;
 				//id=index
@@ -129,8 +128,7 @@ namespace MaxyGames.Generated {
 										_LastDay = System.DateTime.DaysInMonth(_t_year, _t_month).ToString();
 									}
 									_link_Final = _link_Final.Replace("$LastDay", _LastDay);
-									linksToDownload.Add(_link_Final, _t_index);
-									Debug.Log(_link_Final);
+									DictLinks1.Add(_link_Final, _t_index);
 								}
 							}
 						}
@@ -139,7 +137,7 @@ namespace MaxyGames.Generated {
 			}
 			//всё ок, идём дальше
 			_switch = "LinkGeneration";
-			yield break;
+			return DictLinks1;
 		}
 
 		/// <summary>
@@ -225,16 +223,17 @@ namespace MaxyGames.Generated {
 			float r = 0F;
 			conn = UnityWebRequest.Get(url);
 			conn.SetRequestHeader("Accept-Encoding", "gzip, deflate");
-			conn.timeout = 3;
+			conn.timeout = 5;
 			conn.SendWebRequest();
 			while(!(conn.isDone)) {
 				new WaitForEndOfFrame();
 			}
 			if(float.TryParse(conn.GetResponseHeader("Content-Length"), out r)) {
+				Debug.Log("размер: " + r.ToString());
 				//+30% т.к. на сайтах сжатие. А так - чуть ближе к истине
 				return ((r / 3.2F) + r);
 			} else {
-				Debug.Log("tryGetFileSize: " + conn.GetResponseHeader("Content-Length") + "_" + url);
+				Debug.Log("Не скачалась шапка. " + "" + "" + url);
 			}
 			return -1;
 		}
@@ -242,7 +241,7 @@ namespace MaxyGames.Generated {
 		/// <summary>
 		/// Тут будет скачивание.
 		/// </summary>
-		public System.Collections.IEnumerator DownLoadData() {
+		public System.Collections.IEnumerator DownLoadData(Dictionary<string, string> DictLinks) {
 			string _index1 = "";
 			string _w_link = "";
 			string folder_path = "";
@@ -250,9 +249,9 @@ namespace MaxyGames.Generated {
 			int CountTry = 0;
 			float site_size = 0F;
 			List<string> full_tbl_strArr = new List<string>();
-			TryAgain = false;
+			_switch = "!DownLoadData";
 			UnityWebRequest.ClearCookieCache();
-			foreach(KeyValuePair<string, string> loopObject5 in linksToDownload) {
+			foreach(KeyValuePair<string, string> loopObject5 in DictLinks) {
 				_index1 = loopObject5.Value;
 				_w_link = loopObject5.Key;
 				using(UnityWebRequest value = UnityWebRequest.Get(_w_link)) {
@@ -266,18 +265,19 @@ namespace MaxyGames.Generated {
 							yield return new WaitForEndOfFrame();
 						}
 					}
-					yield return new WaitForSeconds(0.2F);
 					if((uwr.result == UnityWebRequest.Result.Success)) {
-						Debug.Log("старт парса at: " + Time.realtimeSinceStartup.ToString());
 						//Парсинг страницы в таблицу
 						full_tbl_strArr = parse_(uwr.downloadHandler.text);
-						Debug.Log("конец парсинга at: " + Time.realtimeSinceStartup.ToString());
 						if((full_tbl_strArr.Count > 0)) {
+							Debug.Log("Отправлено на вставку " + full_tbl_strArr.Count.ToString());
 							DBInserter(full_tbl_strArr, _index1, _w_link.Substring((_w_link.IndexOf("ayear=") + 6), 4));
+							Debug.Log("Отправлено на вставку ___!!!");
+						} else {
+							Debug.Log("список на вставку в бд пуст: " + full_tbl_strArr.Count.ToString());
 						}
 					} else {
 						Debug.Log(uwr.result.ToString() + ":! " + uwr.error + " | " + _index1);
-						TryAgain = true;
+						Pass = true;
 						CountTry = (CountTry + 1);
 						if((CountTry > 3F)) {
 							_switch = "DownLoadData";
@@ -285,11 +285,12 @@ namespace MaxyGames.Generated {
 							yield break;
 						}
 					}
+					Debug.Log("finished uwr.result ");
+					yield return new WaitForEndOfFrame();
 				}
 			}
-			_switch = "DownLoadFiles";
+			_switch = "DownLoadData";
 			Debug.Log("DownLoadFiles and at: " + Time.time.ToString());
-			yield break;
 		}
 
 		public List<string> parse_(string data) {
@@ -361,5 +362,7 @@ namespace MaxyGames.Generated {
 			Debug.Log("в файл залито.");
 			yield break;
 		}
+
+		public void CheckForMissing() {}
 	}
 }
