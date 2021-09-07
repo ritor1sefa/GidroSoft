@@ -1,4 +1,4 @@
-﻿#pragma warning disable
+#pragma warning disable
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Networking;
@@ -34,20 +34,24 @@ namespace MaxyGames.Generated {
 			base.StartCoroutine(LoadFromConfig());
 			yield return new WaitForSeconds(timelimit);
 			if(_switch.Equals("LoadFromConfig")) {
-				DictLinks = LinkGeneration();
-				while(!((DictLinks.Count == 0))) {
-					Debug.Log("Ссылок на скачивание создано: " + DictLinks.Count.ToString());
-					yield return new WaitForSeconds(timelimit);
-					base.StartCoroutine(DownLoadData(DictLinks));
-					yield return new WaitUntil(() => _switch == "DownLoadData");
-					PassCount = (PassCount + 1);
-					Debug.Log("итерация");
-					if((PassCount > 4)) {
-						Debug.Log("Пытался с качать уже " + PassCount.ToString() + " раза. Прервано");
-						yield break;
+				DictLinks = LinkGeneration(true);
+				if((DictLinks.Count > 0)) {
+					while(!((DictLinks.Count == 0))) {
+						Debug.Log("Ссылок на скачивание создано: " + DictLinks.Count.ToString());
+						yield return new WaitForSeconds(timelimit);
+						base.StartCoroutine(DownLoadData(DictLinks));
+						yield return new WaitUntil(() => _switch == "DownLoadData");
+						PassCount = (PassCount + 1);
+						Debug.Log("итерация");
+						if((PassCount > 4)) {
+							Debug.Log("Пытался с качать уже " + PassCount.ToString() + " раза. Прервано");
+							yield break;
+						}
 					}
+					Debug.Log("LinkGeneration = 0");
+				} else {
+					Debug.Log("make xlsx");
 				}
-				Debug.Log("LinkGeneration = 0");
 			} else {
 				Debug.Log("LoadFromConfig > 0.2 sec!!!");
 			}
@@ -70,7 +74,7 @@ namespace MaxyGames.Generated {
 			yield break;
 		}
 
-		public Dictionary<string, string> LinkGeneration() {
+		public Dictionary<string, string> LinkGeneration(bool CheckForMissing) {
 			int curYear = 0;
 			int curMonth = 0;
 			int _monthMin = 1;
@@ -88,6 +92,10 @@ namespace MaxyGames.Generated {
 			string _t_AllDatetimeClmn = "";
 			string _t_dateToCheck = "";
 			Dictionary<string, string> DictLinks1 = new Dictionary<string, string>();
+			int _t_DaysInMonth = 0;
+			string _t_dayToCheck = "";
+			int _t_HourInDay = 0;
+			bool AddMonth = false;
 			curYear = System.DateTime.Now.Year;
 			curMonth = System.DateTime.Now.Month;
 			if(string.IsNullOrEmpty(linkFromConfig.Value)) {
@@ -111,15 +119,39 @@ namespace MaxyGames.Generated {
 							//set month links
 							for(int index = 1; index < _monthMax; index += 1) {
 								_t_month = index;
-								_t_dateToCheck = _t_year.ToString() + (_t_month.ToString("D2") as string) + System.DateTime.DaysInMonth(_t_year, _t_month).ToString();
+								_t_DaysInMonth = System.DateTime.DaysInMonth(_t_year, _t_month);
+								//YYYY1231
+								_t_dateToCheck = _t_year.ToString() + (_t_month.ToString("D2") as string) + _t_DaysInMonth.ToString();
 								if(_t_AllDatetimeClmn.Contains(_t_dateToCheck)) {
 									Debug.Log("LinkGeneration. Пропущено т.к. в бд уже есть этого месяца последний день:  " + _t_dateToCheck);
+									AddMonth = false;
+									if(CheckForMissing) {
+										Debug.Log("Однако полная проверочка");
+										//проверка на отсутствующие часы в месяце
+										if(((_t_DaysInMonth * 8) != (_t_AllDatetimeClmn.Replace(_t_year.ToString() + (_t_month.ToString("D2") as string), _t_year.ToString() + (_t_month.ToString("D2") as string) + "%").Split(new char[] { '%' }).Length - 1))) {
+											Debug.Log("чего то не хватает или лишнее");
+											//Вероятность что чего то лишнее-крайне мала. Вероятностью что чего то лишнего == недостающего ещё меньше. Так что пренебрегаем
+											AddMonth = true;
+											//Избыточный поиск недостающего\лишнего
+											for(int index1 = 1; index1 < (_t_DaysInMonth + 1); index1 += 1) {
+												_t_dayToCheck = _t_year.ToString() + (_t_month.ToString("D2") as string) + index1.ToString("D2");
+												//Часов(строк) в этих сутках
+												_t_HourInDay = (_t_AllDatetimeClmn.Replace(_t_dayToCheck, _t_dayToCheck + "%").Split(new char[] { '%' }).Length - 1);
+												if(!((8 == _t_HourInDay))) {
+													Debug.Log("Нехваток\\избыток __" + _t_HourInDay.ToString() + "__ часов в этот день: " + _t_dayToCheck);
+												}
+											}
+										} else {
+											Debug.Log("Все часы в месяце на месте (удивительно)");
+										}
+									}
 								} else {
+									AddMonth = true;
+								}
+								//Если чего то всё таки не хватает.
+								if(AddMonth) {
 									_link_Final = _link_IndexAndYear.Replace("$month", _t_month.ToString());
 									//set first day in month
-									if(((LastDatetimeInDB.Year == _t_year) && (LastDatetimeInDB.Month == _t_month))) {
-										_FirstDay = LastDatetimeInDB.Day.ToString();
-									}
 									_link_Final = _link_Final.Replace("$FirstDay", _FirstDay);
 									//set last day in month
 									if(((curYear == _t_year) && (curMonth == _t_month))) {
@@ -129,6 +161,7 @@ namespace MaxyGames.Generated {
 									}
 									_link_Final = _link_Final.Replace("$LastDay", _LastDay);
 									DictLinks1.Add(_link_Final, _t_index);
+									Debug.Log(_link_Final);
 								}
 							}
 						}
@@ -173,9 +206,9 @@ namespace MaxyGames.Generated {
 			if(year_2_parse.Contains("+")) {
 				if(int.TryParse(Regex.Replace(year_2_parse, ".*([0-9]{4})\\+.*", "$1", RegexOptions.Multiline, System.TimeSpan.FromMilliseconds(500D)), out _yearPlus)) {
 					if(((_yearPlus > 2010F) && (_yearPlus < curYearPlus1))) {
-						for(int index1 = _yearPlus; index1 < curYearPlus1; index1 += 1) {
-							data_year.Add(index1.ToString());
-							Debug.Log(index1);
+						for(int index2 = _yearPlus; index2 < curYearPlus1; index2 += 1) {
+							data_year.Add(index2.ToString());
+							Debug.Log(index2);
 						}
 						if((data_year.Capacity > 0)) {
 							return data_year;
@@ -193,9 +226,9 @@ namespace MaxyGames.Generated {
 				_year_from = int.Parse(_year_splited[0]);
 				_year_to = int.Parse(_year_splited[1]);
 				if((((_year_from > 2010F) && (_year_to < curYearPlus1)) && (_year_to > _year_from))) {
-					for(int index2 = _year_from; index2 <= _year_to; index2 += 1) {
-						data_year.Add(index2.ToString());
-						Debug.Log(index2);
+					for(int index3 = _year_from; index3 <= _year_to; index3 += 1) {
+						data_year.Add(index3.ToString());
+						Debug.Log(index3);
 					}
 					return data_year;
 				} else {
@@ -269,9 +302,7 @@ namespace MaxyGames.Generated {
 						//Парсинг страницы в таблицу
 						full_tbl_strArr = parse_(uwr.downloadHandler.text);
 						if((full_tbl_strArr.Count > 0)) {
-							Debug.Log("Отправлено на вставку " + full_tbl_strArr.Count.ToString());
 							DBInserter(full_tbl_strArr, _index1, _w_link.Substring((_w_link.IndexOf("ayear=") + 6), 4));
-							Debug.Log("Отправлено на вставку ___!!!");
 						} else {
 							Debug.Log("список на вставку в бд пуст: " + full_tbl_strArr.Count.ToString());
 						}
@@ -285,7 +316,6 @@ namespace MaxyGames.Generated {
 							yield break;
 						}
 					}
-					Debug.Log("finished uwr.result ");
 					yield return new WaitForEndOfFrame();
 				}
 			}
@@ -316,10 +346,10 @@ namespace MaxyGames.Generated {
 			}
 			row_left_nodes = html_doc.DocumentNode.SelectNodes("//div[@class='archive-table-left-column']//tr");
 			//Обработка строк левой таблицы (время-дата)
-			for(int index3 = 0; index3 < row_left_nodes.Count; index3 += 1) {
+			for(int index4 = 0; index4 < row_left_nodes.Count; index4 += 1) {
 				temp_left_row_str = "";
 				//ячейки
-				foreach(HtmlNode loopObject6 in row_left_nodes[index3].SelectNodes("td")) {
+				foreach(HtmlNode loopObject6 in row_left_nodes[index4].SelectNodes("td")) {
 					temp_left_row_str = temp_left_row_str + "." + loopObject6.InnerText;
 				}
 				temp_left_tbl_strArr.Add(temp_left_row_str.Substring(1));
@@ -328,14 +358,14 @@ namespace MaxyGames.Generated {
 			//контроль на совпадение количества строк в таблицах (а вдруг?) (должно получится 20)
 			if((temp_left_tbl_strArr.Count == row_right_nodes.Count)) {
 				//Обработка строк правой таблицы-данные
-				for(int index4 = 1; index4 < temp_left_tbl_strArr.Count; index4 += 1) {
+				for(int index5 = 1; index5 < temp_left_tbl_strArr.Count; index5 += 1) {
 					temp_right_row_str = "";
 					//ячейки
-					foreach(HtmlNode loopObject7 in row_right_nodes[index4].SelectNodes("td")) {
+					foreach(HtmlNode loopObject7 in row_right_nodes[index5].SelectNodes("td")) {
 						temp_right_row_str = temp_right_row_str + "|" + loopObject7.InnerText;
 					}
 					//ГодМесяцДеньЧас
-					_t_date = year + temp_left_tbl_strArr[index4].Split(new char[] { '.' })[2] + temp_left_tbl_strArr[index4].Split(new char[] { '.' })[1].PadLeft(2, '0') + temp_left_tbl_strArr[index4].Split(new char[] { '.' })[0];
+					_t_date = year + temp_left_tbl_strArr[index5].Split(new char[] { '.' })[2] + temp_left_tbl_strArr[index5].Split(new char[] { '.' })[1].PadLeft(2, '0') + temp_left_tbl_strArr[index5].Split(new char[] { '.' })[0];
 					//Строка целиком
 					_t_data = _t_date + "|" + temp_right_row_str.Substring(1);
 					full_tbl_strArr1.Add(_t_data);
@@ -362,7 +392,5 @@ namespace MaxyGames.Generated {
 			Debug.Log("в файл залито.");
 			yield break;
 		}
-
-		public void CheckForMissing() {}
 	}
 }
