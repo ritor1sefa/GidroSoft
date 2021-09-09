@@ -1,4 +1,4 @@
-#pragma warning disable
+﻿#pragma warning disable
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
@@ -14,6 +14,9 @@ namespace MaxyGames.Generated {
 		public IDbCommand dbcmd;
 		public string dbname = "";
 
+		/// <summary>
+		/// удалить потом
+		/// </summary>
 		private bool connect(string db_switch) {
 			string filepath = "";
 			//Подключение разных баз. "свитч"
@@ -48,6 +51,29 @@ namespace MaxyGames.Generated {
 				Debug.Log("Нету Файла Базы Данных: " + filepath);
 			}
 			return false;
+		}
+
+		private bool connect1(string db_index) {
+			string filepath1 = "";
+			//Запуск на пк
+			if((Application.platform != RuntimePlatform.Android)) {
+				filepath1 = "URI=file:" + Application.dataPath + "/StreamingAssets/" + "files/pogodaiklimat2011/bd/" + db_index + ".sqlite";
+			} else {
+				//			dbconn.Open(); //Open connection to the database.
+				//			dbconn = (IDbConnection)new SqliteConnection("URI=file:" + Application.persistentDataPath + dbname);
+				//			}
+				//				File.WriteAllBytes(filepath, loadDB.bytes);
+				//				while (!loadDB.isDone) { }
+				//				WWW loadDB = new WWW("jar:file://" + Application.dataPath + "!/assets/" + dbname);
+				//			{
+				//			if (!File.Exists(filepath))
+				//	// если базы данных по заданному пути нет, размещаем ее там
+				Debug.Log("Android");
+				return false;
+			}
+			dbconn = new SqliteConnection(filepath1);
+			dbconn.Open();
+			return true;
 		}
 
 		private void closes() {
@@ -143,35 +169,25 @@ namespace MaxyGames.Generated {
 			return InsertQuerySimple(db_index, query);
 		}
 
+		public List<string> getData(string db_index, string q) {
+			List<string> data = null;
+			data = new List<string>();
+			if(connect1(db_index)) {
+				dbcmd = dbconn.CreateCommand();
+				dbcmd.CommandText = q;
+				reader = dbcmd.ExecuteReader();
+				while(reader.Read()) {
+					data.Add(reader.GetString(0));
+				}
+				closes();
+			}
+			return data;
+		}
+
 		public void Update() {
 			if(Input.GetKeyUp(KeyCode.LeftArrow)) {
-				Debug.Log("http://www.pogodaiklimat.ru/weather.php?id=34945&bday=1&fday=28&amonth=11&ayear=2011&bot=2".Substring(("http://www.pogodaiklimat.ru/weather.php?id=34945&bday=1&fday=28&amonth=11&ayear=2011&bot=2".IndexOf("ayear=") + 6), 4));
+				Debug.Log(0);
 			}
 		}
-
-		private bool connect1(string db_index) {
-			string filepath1 = "";
-			//Запуск на пк
-			if((Application.platform != RuntimePlatform.Android)) {
-				filepath1 = "URI=file:" + Application.dataPath + "/StreamingAssets/" + "files/pogodaiklimat2011/" + db_index + ".sqlite";
-			} else {
-				//			dbconn.Open(); //Open connection to the database.
-				//			dbconn = (IDbConnection)new SqliteConnection("URI=file:" + Application.persistentDataPath + dbname);
-				//			}
-				//				File.WriteAllBytes(filepath, loadDB.bytes);
-				//				while (!loadDB.isDone) { }
-				//				WWW loadDB = new WWW("jar:file://" + Application.dataPath + "!/assets/" + dbname);
-				//			{
-				//			if (!File.Exists(filepath))
-				//	// если базы данных по заданному пути нет, размещаем ее там
-				Debug.Log("Android");
-				return false;
-			}
-			dbconn = new SqliteConnection(filepath1);
-			dbconn.Open();
-			return true;
-		}
-
-		public void NewFunctionTestt() {}
 	}
 }
