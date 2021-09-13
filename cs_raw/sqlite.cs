@@ -14,10 +14,11 @@ namespace MaxyGames.Generated {
 		public IDbCommand dbcmd;
 		public string dbname = "";
 
-		private bool connect(string db_switch) {
+		private bool connect(string db_index) {
 			string filepath = "";
 			//Запуск на пк
 			if((Application.platform != RuntimePlatform.Android)) {
+				//отредактировать потом, когда другие слои-тагеты будут, не только погода2011
 				filepath = "URI=file:" + Application.dataPath + "/StreamingAssets/" + "files/pogodaiklimat2011/bd/" + db_index + ".sqlite";
 			} else {
 				//			dbconn.Open(); //Open connection to the database.
@@ -32,7 +33,7 @@ namespace MaxyGames.Generated {
 				Debug.Log("Android");
 				return false;
 			}
-			dbconn = new SqliteConnection();
+			dbconn = new SqliteConnection(filepath);
 			dbconn.Open();
 			return true;
 		}
@@ -145,8 +146,8 @@ namespace MaxyGames.Generated {
 					}
 					table.Add(row);
 				}
-				closes();
 			}
+			closes();
 			return table;
 		}
 
