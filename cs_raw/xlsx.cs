@@ -51,10 +51,11 @@ namespace MaxyGames.Generated {
 			List<List<string>> tableFromBD = null;
 			List<string> SheetNames = null;
 			string year_table_page = "";
-			FileStream fs = null;
-			using(FileStream value = File.Open(FileManage("pogodaiklimat2011", "29838", "2011,2012", true), FileMode.OpenOrCreate, FileAccess.ReadWrite)) {
-				fs = value;
-				xslxFile = new XSSFWorkbook(fs);
+			FileStream fsO = null;
+			string Path = "";
+			Path = FileManage("pogodaiklimat2011", "29838", "2011,2012", true);
+			using(FileStream value = File.Open(Path, FileMode.Open)) {
+				xslxFile = new XSSFWorkbook(value);
 				SheetNames = getSheetNames(xslxFile);
 				//Года
 				foreach(string loopObject in "2011,2012".Split(new char[] { ',' })) {
@@ -67,11 +68,12 @@ namespace MaxyGames.Generated {
 					}
 					Debug.Log(year_table_page);
 				}
-				xslxFile.Write(fs);
-				//Закрывашка
-				xslxFile.Close();
-				yield return xslxFile;
 			}
+			using(FileStream value1 = new FileStream(Path, FileMode.Create, FileAccess.Write)) {
+				//Сохраняем
+				xslxFile.Write(value1);
+			}
+			yield return false;
 		}
 
 		public List<string> getSheetNames(XSSFWorkbook wb) {
