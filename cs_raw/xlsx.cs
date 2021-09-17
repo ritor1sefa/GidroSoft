@@ -1,4 +1,4 @@
-#pragma warning disable
+﻿#pragma warning disable
 using UnityEngine;
 using System.IO;
 using System.Data;
@@ -46,27 +46,60 @@ namespace MaxyGames.Generated {
 			return xlsxTargetFile;
 		}
 
-		public System.Collections.IEnumerator xlsxSet(string target, string index, string yearList, bool monoFile) {
+		public System.Collections.IEnumerator xlsxSet(string target, string index_id, string yearList, bool monoFile) {
 			XSSFWorkbook xslxFile = null;
 			List<List<string>> tableFromBD = null;
 			List<string> SheetNames = null;
 			string year_table_page = "";
 			FileStream fsO = null;
 			string Path = "";
+			NPOI.SS.UserModel.ISheet currentSheet = null;
+			int _RowStart = 4;
+			int _CellStart = 2;
+			int Row = 0;
+			int Cell = 0;
+			NPOI.SS.UserModel.IRow IRow = null;
+			NPOI.SS.UserModel.ICell ICell = null;
+			float _cell_num = 0F;
 			Path = FileManage("pogodaiklimat2011", "29838", "2011,2012", true);
 			using(FileStream value = File.Open(Path, FileMode.Open)) {
 				xslxFile = new XSSFWorkbook(value);
 				SheetNames = getSheetNames(xslxFile);
 				//Года
-				foreach(string loopObject in "2011,2012".Split(new char[] { ',' })) {
+				foreach(string loopObject in "2011".Split(new char[] { ',' })) {
 					year_table_page = loopObject;
-					tableFromBD = sqlite.GetComponent<sqlite>().getData(index, "SELECT * FROM \"" + year_table_page + "\"");
+					tableFromBD = sqlite.GetComponent<sqlite>().getData(index_id, "SELECT * FROM \"" + year_table_page + "\"");
 					if(!(SheetNames.Contains(year_table_page))) {
 						//Если нужной страницы нету, делаем копию того, что точно должна быть в наличии
 						xslxFile.GetSheet("2011").CopySheet(year_table_page);
 						Debug.Log("Новая копия, страница: " + year_table_page);
 					}
 					Debug.Log(year_table_page);
+					currentSheet = xslxFile.GetSheet(year_table_page);
+					foreach(List<string> loopObject1 in tableFromBD) {
+						Row = (Row + 1);
+						try {
+							IRow = currentSheet.GetRow(Row);
+						}
+						catch {
+							IRow = currentSheet.CreateRow(Row);
+							Debug.Log("row-");
+						}
+						finally {
+							foreach(string loopObject2 in loopObject1) {
+								Cell = (Cell + 1);
+								ICell = IRow.GetCell(Cell, NPOI.SS.UserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+								if(float.TryParse(loopObject2, out _cell_num)) {
+									ICell.SetCellValue(_cell_num);
+								} else {
+									ICell.SetCellValue(loopObject2);
+								}
+								Debug.Log(ICell.CellType);
+							}
+							Cell = 0;
+						}
+					}
+					Row = 0;
 				}
 			}
 			using(FileStream value1 = new FileStream(Path, FileMode.Create, FileAccess.Write)) {
