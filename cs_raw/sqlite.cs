@@ -143,15 +143,13 @@ namespace MaxyGames.Generated {
 				while(reader.Read()) {
 					for(int index = 0; index < 19; index += 1) {
 						row.Add(reader.GetString(index));
-						if((row.Count > 50)) {
-							closes();
-							return table;
-						}
 					}
 					table.Add(row);
 					row = new List<string>();
-					Debug.Log("Строк:" + table.Count.ToString());
 				}
+				closes();
+				Debug.Log("Строк:" + table.Count.ToString());
+				return table;
 			}
 			closes();
 			return table;
@@ -159,7 +157,7 @@ namespace MaxyGames.Generated {
 
 		public void Update() {
 			if(Input.GetKeyUp(KeyCode.LeftArrow)) {
-				Debug.Log(0);
+				getData("29838", "SELECT * FROM \"2011\"");
 			}
 		}
 	}

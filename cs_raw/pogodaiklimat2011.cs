@@ -1,4 +1,4 @@
-#pragma warning disable
+﻿#pragma warning disable
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Networking;
@@ -27,7 +27,7 @@ namespace MaxyGames.Generated {
 			}
 		}
 
-		public System.Collections.IEnumerator _function_group() {
+		private System.Collections.IEnumerator _function_group() {
 			float timelimit = 0.2F;
 			int PassCount = 0;
 			Dictionary<string, string> DictLinks = new Dictionary<string, string>();
@@ -43,10 +43,7 @@ namespace MaxyGames.Generated {
 						yield return new WaitUntil(() => _switch == "DownLoadData");
 						PassCount = (PassCount + 1);
 						Debug.Log("итерация");
-						if((PassCount > 4)) {
-							Debug.Log("Пытался с качать уже " + PassCount.ToString() + " раза. Прервано");
-							yield break;
-						}
+						yield break;
 					}
 					Debug.Log("LinkGeneration = 0");
 				} else {
@@ -58,7 +55,7 @@ namespace MaxyGames.Generated {
 			yield break;
 		}
 
-		public System.Collections.IEnumerator LoadFromConfig() {
+		private System.Collections.IEnumerator LoadFromConfig() {
 			linkFromConfig = new KeyValuePair<string, string>();
 			foreach(KeyValuePair<string, string> loopObject in Ini.Load("config.ini")) {
 				if(loopObject.Key.StartsWith("pogodaiklimat2011")) {
@@ -74,7 +71,7 @@ namespace MaxyGames.Generated {
 			yield break;
 		}
 
-		public Dictionary<string, string> LinkGeneration(bool CheckForMissing) {
+		private Dictionary<string, string> LinkGeneration(bool CheckForMissing) {
 			int curYear = 0;
 			int curMonth = 0;
 			int _monthMin = 1;
@@ -176,7 +173,7 @@ namespace MaxyGames.Generated {
 		/// <summary>
 		/// Get data from input field
 		/// </summary>
-		public List<string> _indexArray() {
+		private List<string> _indexArray() {
 			List<string> data_index = new List<string>();
 			int variable1 = 0;
 			data_index = new List<string>();
@@ -191,7 +188,7 @@ namespace MaxyGames.Generated {
 		/// <summary>
 		/// Get data from input field
 		/// </summary>
-		public List<string> _yearArray() {
+		private List<string> _yearArray() {
 			List<string> data_year = null;
 			string year_2_parse = "";
 			int _yearPlus = 0;
@@ -251,7 +248,7 @@ namespace MaxyGames.Generated {
 			return data_year;
 		}
 
-		public float _tryGetSiteSize(string url) {
+		private float _tryGetSiteSize(string url) {
 			UnityWebRequest conn = null;
 			float r = 0F;
 			conn = UnityWebRequest.Get(url);
@@ -274,7 +271,7 @@ namespace MaxyGames.Generated {
 		/// <summary>
 		/// Тут будет скачивание.
 		/// </summary>
-		public System.Collections.IEnumerator DownLoadData(Dictionary<string, string> DictLinks) {
+		private System.Collections.IEnumerator DownLoadData(Dictionary<string, string> DictLinks) {
 			string _index1 = "";
 			string _w_link = "";
 			string folder_path = "";
@@ -323,7 +320,7 @@ namespace MaxyGames.Generated {
 			Debug.Log("DownLoadFiles and at: " + Time.time.ToString());
 		}
 
-		public List<string> parse_(string data) {
+		private List<string> parse_(string data) {
 			HtmlDocument html_doc = null;
 			List<string> temp_left_tbl_strArr = null;
 			string temp_left_row_str = "";
@@ -376,7 +373,7 @@ namespace MaxyGames.Generated {
 			return full_tbl_strArr1;
 		}
 
-		public void DBInserter(List<string> full_tbl_strArr, string indexDB, string table_year) {
+		private void DBInserter(List<string> full_tbl_strArr, string indexDB, string table_year) {
 			string q = "";
 			q = "REPLACE INTO \"" + table_year + "\" (\"date\",\"wind_dir\",\"wind_speed\",\"vis_range\",\"phenomena\",\"cloudy\",\"T\",\"Td\",\"f\",\"Te\",\"Tes\",\"Comfort\",\"P\",\"Po\",\"Tmin\",\"Tmax\",\"R\",\"R24\",\"S\") " + "VALUES (\"" + string.Join<System.String>("\"),(\"", full_tbl_strArr).Replace("|", "\",\"") + "\")";
 			Debug.Log(sqlite.GetComponent<sqlite>().InsertQueryTable(indexDB, q));
@@ -385,11 +382,6 @@ namespace MaxyGames.Generated {
 		public System.Collections.IEnumerator _t_writeToLog(string dataToLog) {
 			Stream fs = null;
 			string filePatch = "";
-			filePatch = "log_tmp.txt";
-			fs = File.Open("log_tmp.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-			fs.Close();
-			File.WriteAllText(filePatch, dataToLog);
-			Debug.Log("в файл залито.");
 			yield break;
 		}
 	}
