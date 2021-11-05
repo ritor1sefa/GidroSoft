@@ -11,12 +11,15 @@ using MaxyGames.Generated;
 namespace MaxyGames.Generated {
 	public class pogodaiklimat2011 : MaxyGames.RuntimeBehaviour {
 		public KeyValuePair<string, string> linkFromConfig = new KeyValuePair<string, string>();
-		public UnityEngine.UI.InputField _index = null;
-		public UnityEngine.UI.InputField _year = null;
 		public string _switch = "";
 		public bool Pass = false;
 		public MaxyGames.uNode.uNodeRuntime sqlite = null;
 		public string db = "pogodaiklimat2011";
+		public TMPro.TMP_InputField InputF_Index = null;
+		public TMPro.TMP_InputField InputF_Year = null;
+		public List<string> sqliteDBs = new List<string>();
+
+		public void Start() {}
 
 		public void StartPogodaklimat2011() {
 			if((_tryGetSiteSize("www.google.com") > 0F)) {
@@ -25,6 +28,89 @@ namespace MaxyGames.Generated {
 				Debug.Log("Интернет не работает?");
 				Debug.Log(_tryGetSiteSize("www.google.com"));
 			}
+		}
+
+		public void UpdateInInputIndex() {
+			//если найдены номера - вывести их. если нет то сделать поиск по списку городов-регионов и вывести их. если совпадений нету - показать имеющиеся бд и сказать что нету совпадений. ели пустая строка-показать имеющиеся.
+			if((_indexArray().Count > 0)) {}
+		}
+
+		/// <summary>
+		/// Get data from input field
+		/// </summary>
+		private List<string> _indexArray() {
+			List<string> data_index = new List<string>();
+			int variable1 = 0;
+			data_index = new List<string>();
+			foreach(string loopObject in Regex.Split(InputF_Index.text, "\\D", RegexOptions.Multiline)) {
+				if(int.TryParse(loopObject, out variable1)) {
+					data_index.Add(loopObject);
+				}
+			}
+			return data_index;
+		}
+
+		/// <summary>
+		/// Get data from input field
+		/// </summary>
+		private List<string> _yearArray() {
+			List<string> data_year = null;
+			string year_2_parse = "";
+			int _yearPlus = 0;
+			int _year_from = 0;
+			int _year_to = 0;
+			string[] _year_splited = new string[0];
+			int _year_casual = 0;
+			int curYearPlus1 = 0;
+			curYearPlus1 = (System.DateTime.Now.Year + 1);
+			data_year = new List<string>();
+			year_2_parse = InputF_Year.text;
+			if(year_2_parse.Contains("+")) {
+				if(int.TryParse(Regex.Replace(year_2_parse, ".*([0-9]{4})\\+.*", "$1", RegexOptions.Multiline, System.TimeSpan.FromMilliseconds(500D)), out _yearPlus)) {
+					if(((_yearPlus > 2010F) && (_yearPlus < curYearPlus1))) {
+						for(int index = _yearPlus; index < curYearPlus1; index += 1) {
+							data_year.Add(index.ToString());
+							Debug.Log(index);
+						}
+						if((data_year.Capacity > 0)) {
+							return data_year;
+						} else {
+							Debug.Log("Есть года, но не в том диапазоне");
+						}
+					} else {
+						Debug.Log("Есть +, но нету валидного года рядом с плюсом");
+					}
+				} else {
+					Debug.Log("Есть +, но нету 4значного числа");
+				}
+			} else if(year_2_parse.Contains("-")) {
+				_year_splited = Regex.Replace(year_2_parse, ".*([0-9-]{9}).*", " $1 ").Split(new char[] { '-' });
+				_year_from = int.Parse(_year_splited[0]);
+				_year_to = int.Parse(_year_splited[1]);
+				if((((_year_from > 2010F) && (_year_to < curYearPlus1)) && (_year_to > _year_from))) {
+					for(int index1 = _year_from; index1 <= _year_to; index1 += 1) {
+						data_year.Add(index1.ToString());
+						Debug.Log(index1);
+					}
+					return data_year;
+				} else {
+					Debug.Log("from_to_Года не соответствуют: " + year_2_parse);
+				}
+			} else {
+				foreach(string loopObject1 in Regex.Split(year_2_parse, "\\D", RegexOptions.Multiline)) {
+					if(((int.TryParse(loopObject1, out _year_casual) && (_year_casual > 2010F)) && (_year_casual < curYearPlus1))) {
+						data_year.Add(_year_casual.ToString());
+					}
+				}
+				if((data_year.Capacity > 0F)) {
+					data_year.Sort();
+					return data_year;
+				} else {
+					Debug.Log("casual_Года не соответствуют: " + year_2_parse);
+				}
+			}
+			Debug.Log("11111");
+			return data_year;
 		}
 
 		private System.Collections.IEnumerator _function_group() {
@@ -57,9 +143,9 @@ namespace MaxyGames.Generated {
 
 		private System.Collections.IEnumerator LoadFromConfig() {
 			linkFromConfig = new KeyValuePair<string, string>();
-			foreach(KeyValuePair<string, string> loopObject in Ini.Load("config.ini")) {
-				if(loopObject.Key.StartsWith("pogodaiklimat2011")) {
-					linkFromConfig = loopObject;
+			foreach(KeyValuePair<string, string> loopObject2 in Ini.Load("config.ini")) {
+				if(loopObject2.Key.StartsWith("pogodaiklimat2011")) {
+					linkFromConfig = loopObject2;
 					break;
 				}
 			}
@@ -100,22 +186,22 @@ namespace MaxyGames.Generated {
 			} else {
 				_link_base = linkFromConfig.Value;
 				//id=index
-				foreach(string loopObject1 in _indexArray()) {
-					_t_index = loopObject1;
+				foreach(string loopObject3 in _indexArray()) {
+					_t_index = loopObject3;
 					_link_Index = _link_base.Replace("$id", _t_index);
 					//set year
-					foreach(string loopObject2 in _yearArray()) {
-						_t_AllDatetimeClmn = sqlite.GetComponent<sqlite>().GetAllDatetimeClmn(_t_index, loopObject2);
-						if((int.Parse(loopObject2) <= curYear)) {
-							_t_year = int.Parse(loopObject2);
+					foreach(string loopObject4 in _yearArray()) {
+						_t_AllDatetimeClmn = sqlite.GetComponent<sqlite>().GetAllDatetimeClmn(_t_index, loopObject4);
+						if((int.Parse(loopObject4) <= curYear)) {
+							_t_year = int.Parse(loopObject4);
 							_link_IndexAndYear = _link_Index.Replace("$year", _t_year.ToString());
 							if(_t_year.Equals(curYear)) {
 								//set month max
 								_monthMax = (curMonth + 1);
 							}
 							//set month links
-							for(int index = 1; index < _monthMax; index += 1) {
-								_t_month = index;
+							for(int index2 = 1; index2 < _monthMax; index2 += 1) {
+								_t_month = index2;
 								_t_DaysInMonth = System.DateTime.DaysInMonth(_t_year, _t_month);
 								//YYYY1231
 								_t_dateToCheck = _t_year.ToString() + (_t_month.ToString("D2") as string) + _t_DaysInMonth.ToString();
@@ -130,8 +216,8 @@ namespace MaxyGames.Generated {
 											//Вероятность что чего то лишнее-крайне мала. Вероятностью что чего то лишнего == недостающего ещё меньше. Так что пренебрегаем
 											AddMonth = true;
 											//Избыточный поиск недостающего\лишнего
-											for(int index1 = 1; index1 < (_t_DaysInMonth + 1); index1 += 1) {
-												_t_dayToCheck = _t_year.ToString() + (_t_month.ToString("D2") as string) + index1.ToString("D2");
+											for(int index3 = 1; index3 < (_t_DaysInMonth + 1); index3 += 1) {
+												_t_dayToCheck = _t_year.ToString() + (_t_month.ToString("D2") as string) + index3.ToString("D2");
 												//Часов(строк) в этих сутках
 												_t_HourInDay = (_t_AllDatetimeClmn.Replace(_t_dayToCheck, _t_dayToCheck + "%").Split(new char[] { '%' }).Length - 1);
 												if(!((8 == _t_HourInDay))) {
@@ -170,84 +256,6 @@ namespace MaxyGames.Generated {
 			return DictLinks1;
 		}
 
-		/// <summary>
-		/// Get data from input field
-		/// </summary>
-		private List<string> _indexArray() {
-			List<string> data_index = new List<string>();
-			int variable1 = 0;
-			data_index = new List<string>();
-			foreach(string loopObject3 in Regex.Split(_index.text, "\\D", RegexOptions.Multiline)) {
-				if(int.TryParse(loopObject3, out variable1)) {
-					data_index.Add(loopObject3);
-				}
-			}
-			return data_index;
-		}
-
-		/// <summary>
-		/// Get data from input field
-		/// </summary>
-		private List<string> _yearArray() {
-			List<string> data_year = null;
-			string year_2_parse = "";
-			int _yearPlus = 0;
-			int _year_from = 0;
-			int _year_to = 0;
-			string[] _year_splited = new string[0];
-			int _year_casual = 0;
-			int curYearPlus1 = 0;
-			curYearPlus1 = (System.DateTime.Now.Year + 1);
-			data_year = new List<string>();
-			year_2_parse = _year.text;
-			if(year_2_parse.Contains("+")) {
-				if(int.TryParse(Regex.Replace(year_2_parse, ".*([0-9]{4})\\+.*", "$1", RegexOptions.Multiline, System.TimeSpan.FromMilliseconds(500D)), out _yearPlus)) {
-					if(((_yearPlus > 2010F) && (_yearPlus < curYearPlus1))) {
-						for(int index2 = _yearPlus; index2 < curYearPlus1; index2 += 1) {
-							data_year.Add(index2.ToString());
-							Debug.Log(index2);
-						}
-						if((data_year.Capacity > 0)) {
-							return data_year;
-						} else {
-							Debug.Log("Есть года, но не в том диапазоне");
-						}
-					} else {
-						Debug.Log("Есть +, но нету валидного года рядом с плюсом");
-					}
-				} else {
-					Debug.Log("Есть +, но нету 4значного числа");
-				}
-			} else if(year_2_parse.Contains("-")) {
-				_year_splited = Regex.Replace(year_2_parse, ".*([0-9-]{9}).*", " $1 ").Split(new char[] { '-' });
-				_year_from = int.Parse(_year_splited[0]);
-				_year_to = int.Parse(_year_splited[1]);
-				if((((_year_from > 2010F) && (_year_to < curYearPlus1)) && (_year_to > _year_from))) {
-					for(int index3 = _year_from; index3 <= _year_to; index3 += 1) {
-						data_year.Add(index3.ToString());
-						Debug.Log(index3);
-					}
-					return data_year;
-				} else {
-					Debug.Log("from_to_Года не соответствуют: " + year_2_parse);
-				}
-			} else {
-				foreach(string loopObject4 in Regex.Split(year_2_parse, "\\D", RegexOptions.Multiline)) {
-					if(((int.TryParse(loopObject4, out _year_casual) && (_year_casual > 2010F)) && (_year_casual < curYearPlus1))) {
-						data_year.Add(_year_casual.ToString());
-					}
-				}
-				if((data_year.Capacity > 0F)) {
-					data_year.Sort();
-					return data_year;
-				} else {
-					Debug.Log("casual_Года не соответствуют: " + year_2_parse);
-				}
-			}
-			Debug.Log("11111");
-			return data_year;
-		}
-
 		private float _tryGetSiteSize(string url) {
 			UnityWebRequest conn = null;
 			float r = 0F;
@@ -272,7 +280,7 @@ namespace MaxyGames.Generated {
 		/// Тут будет скачивание.
 		/// </summary>
 		private System.Collections.IEnumerator DownLoadData(Dictionary<string, string> DictLinks) {
-			string _index1 = "";
+			string _index = "";
 			string _w_link = "";
 			string folder_path = "";
 			UnityWebRequest uwr = null;
@@ -282,7 +290,7 @@ namespace MaxyGames.Generated {
 			_switch = "!DownLoadData";
 			UnityWebRequest.ClearCookieCache();
 			foreach(KeyValuePair<string, string> loopObject5 in DictLinks) {
-				_index1 = loopObject5.Value;
+				_index = loopObject5.Value;
 				_w_link = loopObject5.Key;
 				using(UnityWebRequest value = UnityWebRequest.Get(_w_link)) {
 					uwr = value;
@@ -299,12 +307,12 @@ namespace MaxyGames.Generated {
 						//Парсинг страницы в таблицу
 						full_tbl_strArr = parse_(uwr.downloadHandler.text);
 						if((full_tbl_strArr.Count > 0)) {
-							DBInserter(full_tbl_strArr, _index1, _w_link.Substring((_w_link.IndexOf("ayear=") + 6), 4));
+							DBInserter(full_tbl_strArr, _index, _w_link.Substring((_w_link.IndexOf("ayear=") + 6), 4));
 						} else {
 							Debug.Log("список на вставку в бд пуст: " + full_tbl_strArr.Count.ToString());
 						}
 					} else {
-						Debug.Log(uwr.result.ToString() + ":! " + uwr.error + " | " + _index1);
+						Debug.Log(uwr.result.ToString() + ":! " + uwr.error + " | " + _index);
 						Pass = true;
 						CountTry = (CountTry + 1);
 						if((CountTry > 3F)) {
@@ -383,6 +391,21 @@ namespace MaxyGames.Generated {
 			Stream fs = null;
 			string filePatch = "";
 			yield break;
+		}
+
+		public List<string> _dbSqliteList(bool update) {
+			//Обновление списка баз при старте или принудительно
+			if((!((sqliteDBs is object)) || update)) {
+				//списка баз не было
+				sqliteDBs = new List<string>(Directory.EnumerateFiles("" + Application.dataPath + "/StreamingAssets/" + "files/pogodaiklimat2011/bd/", "*.sqlite", SearchOption.AllDirectories));
+			}
+			return sqliteDBs;
+		}
+
+		public void Update() {
+			if(Input.GetKeyUp(KeyCode.RightArrow)) {
+				_dbSqliteList(false);
+			}
 		}
 	}
 }

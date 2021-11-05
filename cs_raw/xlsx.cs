@@ -1,27 +1,23 @@
-#pragma warning disable
+﻿#pragma warning disable
 using UnityEngine;
 using System.Collections.Generic;
 using MaxyGames.Generated;
-using NPOI.XSSF.UserModel;
 using HtmlAgilityPack;
 using System.Data;
 using System.IO;
-using ClosedXML;
 using ClosedXML.Excel;
-using ClosedXML.Utils;
+using ClosedXML;
+using DocumentFormat.OpenXml.Office2013.Excel;
+using Aspose.Cells;
 
 namespace MaxyGames.Generated {
 	public class _xlsx : MaxyGames.RuntimeBehaviour {
 		public MaxyGames.uNode.uNodeRuntime _sqlite = null;
 		public bool newTmpFolder = false;
 
-		public void Update() {
-			if(Input.GetKeyUp(KeyCode.RightArrow)) {
-				base.StartCoroutine(xlsxSet_ClosedXML("pogodaiklimat2011", "37036", "2011,2012", true));
-			}
-		}
+		public void Update() {}
 
-		public List<string> getSheetNames(XSSFWorkbook wb) {
+		public List<string> getSheetNames(NPOI.XSSF.UserModel.XSSFWorkbook wb) {
 			List<string> Sheets = null;
 			Sheets = new List<string>();
 			for(int index = 0; index < wb.NumberOfSheets; index += 1) {
@@ -56,7 +52,7 @@ namespace MaxyGames.Generated {
 		}
 
 		public System.Collections.IEnumerator xlsxSet(string target, string index_id, string yearList, bool monof) {
-			XSSFWorkbook xslxFile = null;
+			NPOI.XSSF.UserModel.XSSFWorkbook xslxFile = null;
 			List<List<string>> tableFromBD = new List<List<string>>();
 			List<string> SheetNames = new List<string>();
 			string year_table_page = "";
@@ -72,7 +68,7 @@ namespace MaxyGames.Generated {
 			float cell_num_value = 0F;
 			Path = FileManage(target, index_id, yearList, monof);
 			using(FileStream value = File.Open(Path, FileMode.Open)) {
-				xslxFile = new XSSFWorkbook(value);
+				xslxFile = new NPOI.XSSF.UserModel.XSSFWorkbook(value);
 				SheetNames = getSheetNames(xslxFile);
 				//Года
 				foreach(string loopObject in "2015".Split(new char[] { ',' })) {
@@ -133,7 +129,7 @@ namespace MaxyGames.Generated {
 		}
 
 		public System.Collections.IEnumerator xlsxSet_ClosedXML(string target, string index_id, string yearList, bool monof) {
-			XSSFWorkbook xslxFile1 = null;
+			NPOI.XSSF.UserModel.XSSFWorkbook xslxFile1 = null;
 			List<List<string>> tableFromBD1 = new List<List<string>>();
 			List<string> SheetNames1 = new List<string>();
 			string year_table_page1 = "";
@@ -150,7 +146,7 @@ namespace MaxyGames.Generated {
 			int c_item_in_list = 0;
 			string c_item_value = "";
 			IXLCell c_ixl_cell = null;
-			XSSFWorkbook variable17 = null;
+			NPOI.XSSF.UserModel.XSSFWorkbook variable17 = null;
 			Path1 = FileManage(target, index_id, yearList, monof);
 			Debug.Log("открытие");
 			yield return new WaitForEndOfFrame();

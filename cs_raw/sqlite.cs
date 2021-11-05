@@ -1,4 +1,4 @@
-#pragma warning disable
+﻿#pragma warning disable
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
@@ -155,10 +155,6 @@ namespace MaxyGames.Generated {
 			return table;
 		}
 
-		public void Update() {
-			if(Input.GetKeyUp(KeyCode.LeftArrow)) {
-				Debug.Log(getData("29838", "SELECT * FROM \"2011\" ORDER BY \"date\"").Count);
-			}
-		}
+		public void Update() {}
 	}
 }
