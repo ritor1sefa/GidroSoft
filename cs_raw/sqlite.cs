@@ -1,4 +1,4 @@
-﻿#pragma warning disable
+#pragma warning disable
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
@@ -153,6 +153,46 @@ namespace MaxyGames.Generated {
 			}
 			closes();
 			return table;
+		}
+
+		public List<List<string>> getDataUniversalLstLst(string db_index, string q) {
+			List<string> row1 = null;
+			List<List<string>> table1 = null;
+			table1 = new List<List<string>>();
+			row1 = new List<string>();
+			if(connect(db_index)) {
+				dbcmd = dbconn.CreateCommand();
+				dbcmd.CommandText = q;
+				reader = dbcmd.ExecuteReader();
+				while(reader.Read()) {
+					for(int index1 = 0; index1 < reader.FieldCount; index1 += 1) {
+						row1.Add(reader.GetString(index1));
+					}
+					table1.Add(row1);
+					row1 = new List<string>();
+				}
+				closes();
+				Debug.Log("Строк:" + table1.Count.ToString());
+				return table1;
+			}
+			closes();
+			return table1;
+		}
+
+		public string getDataUniversalStr(string db_index, string q) {
+			string a_strng = "2011010100";
+			CreateNewTable(db_index, q);
+			if(connect(db_index)) {
+				dbcmd = dbconn.CreateCommand();
+				dbcmd.CommandText = q;
+				reader = dbcmd.ExecuteReader();
+				reader.Read();
+				if(!(reader.IsDBNull(0))) {
+					a_strng = reader.GetValue(0) as string;
+				}
+				closes();
+			}
+			return a_strng;
 		}
 
 		public void Update() {}

@@ -1,4 +1,4 @@
-﻿#pragma warning disable
+#pragma warning disable
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Networking;
@@ -7,6 +7,7 @@ using System.IO;
 using HtmlAgilityPack;
 using NPOI.XSSF.UserModel;
 using MaxyGames.Generated;
+using TMPro;
 
 namespace MaxyGames.Generated {
 	public class pogodaiklimat2011 : MaxyGames.RuntimeBehaviour {
@@ -15,36 +16,62 @@ namespace MaxyGames.Generated {
 		public bool Pass = false;
 		public MaxyGames.uNode.uNodeRuntime sqlite = null;
 		public string db = "pogodaiklimat2011";
-		public TMPro.TMP_InputField InputF_Index = null;
-		public TMPro.TMP_InputField InputF_Year = null;
+		public TMP_InputField InputF_Index = null;
+		public TMP_InputField InputF_Year = null;
 		public List<string> sqliteDBs = new List<string>();
+		public Transform parentOfLeft = null;
+		public UnityEngine.GameObject objectVariable;
 
 		public void Start() {}
 
 		public void StartPogodaklimat2011() {
-			if((_tryGetSiteSize("www.google.com") > 0F)) {
-				base.StartCoroutine(_function_group());
-			} else {
-				Debug.Log("Интернет не работает?");
-				Debug.Log(_tryGetSiteSize("www.google.com"));
-			}
+			base.StartCoroutine(_function_group());
 		}
 
+		/// <summary>
+		/// ппоказывает список слева
+		/// </summary>
 		public void UpdateInInputIndex() {
+			List<string> _inputArrayList = null;
+			List<string> _dbSqliteList = null;
+			UnityEngine.GameObject GO_current = null;
+			string index_cur = "";
+			TMP_Text variable4 = null;
+			_inputArrayList = _f_indexArray();
+			_dbSqliteList = _f_dbSqliteList(false);
 			//если найдены номера - вывести их. если нет то сделать поиск по списку городов-регионов и вывести их. если совпадений нету - показать имеющиеся бд и сказать что нету совпадений. ели пустая строка-показать имеющиеся.
-			if((_indexArray().Count > 0)) {}
+			if((_inputArrayList.Count > 0)) {
+				//clean
+				for(int index = 0; index < parentOfLeft.childCount; index += 1) {
+					Object.Destroy(parentOfLeft.GetChild(index).gameObject);
+				}
+				foreach(string loopObject in _inputArrayList) {
+					index_cur = loopObject;
+					//если найдены номера - вывести их. если нет то сделать поиск по списку городов-регионов и вывести их. если совпадений нету - показать имеющиеся бд и сказать что нету совпадений. ели пустая строка-показать имеющиеся.
+					if(_dbSqliteList.Contains(index_cur)) {
+						GO_current = Object.Instantiate<UnityEngine.GameObject>(objectVariable, parentOfLeft);
+						//set name of GameObject
+						GO_current.name = index_cur;
+						//именование батона
+						GO_current.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = sqlite.GetComponent<sqlite>().getDataUniversalStr("2011_names", "SELECT name FROM 'ru' WHERE id_index='" + index_cur + "' ORDER BY id_index DESC");
+						Debug.Log("");
+					}
+				}
+			} else {
+				Debug.Log("совпадений нету");
+			}
 		}
 
 		/// <summary>
 		/// Get data from input field
 		/// </summary>
-		private List<string> _indexArray() {
+		private List<string> _f_indexArray() {
 			List<string> data_index = new List<string>();
 			int variable1 = 0;
 			data_index = new List<string>();
-			foreach(string loopObject in Regex.Split(InputF_Index.text, "\\D", RegexOptions.Multiline)) {
-				if(int.TryParse(loopObject, out variable1)) {
-					data_index.Add(loopObject);
+			foreach(string loopObject1 in Regex.Split(InputF_Index.text, "\\D", RegexOptions.Multiline)) {
+				if(int.TryParse(loopObject1, out variable1)) {
+					data_index.Add(loopObject1);
 				}
 			}
 			return data_index;
@@ -53,7 +80,7 @@ namespace MaxyGames.Generated {
 		/// <summary>
 		/// Get data from input field
 		/// </summary>
-		private List<string> _yearArray() {
+		private List<string> _f_yearArray() {
 			List<string> data_year = null;
 			string year_2_parse = "";
 			int _yearPlus = 0;
@@ -64,13 +91,14 @@ namespace MaxyGames.Generated {
 			int curYearPlus1 = 0;
 			curYearPlus1 = (System.DateTime.Now.Year + 1);
 			data_year = new List<string>();
+			Debug.Log(InputF_Year.text);
 			year_2_parse = InputF_Year.text;
 			if(year_2_parse.Contains("+")) {
 				if(int.TryParse(Regex.Replace(year_2_parse, ".*([0-9]{4})\\+.*", "$1", RegexOptions.Multiline, System.TimeSpan.FromMilliseconds(500D)), out _yearPlus)) {
 					if(((_yearPlus > 2010F) && (_yearPlus < curYearPlus1))) {
-						for(int index = _yearPlus; index < curYearPlus1; index += 1) {
-							data_year.Add(index.ToString());
-							Debug.Log(index);
+						for(int index1 = _yearPlus; index1 < curYearPlus1; index1 += 1) {
+							data_year.Add(index1.ToString());
+							Debug.Log(index1);
 						}
 						if((data_year.Capacity > 0)) {
 							return data_year;
@@ -88,17 +116,17 @@ namespace MaxyGames.Generated {
 				_year_from = int.Parse(_year_splited[0]);
 				_year_to = int.Parse(_year_splited[1]);
 				if((((_year_from > 2010F) && (_year_to < curYearPlus1)) && (_year_to > _year_from))) {
-					for(int index1 = _year_from; index1 <= _year_to; index1 += 1) {
-						data_year.Add(index1.ToString());
-						Debug.Log(index1);
+					for(int index2 = _year_from; index2 <= _year_to; index2 += 1) {
+						data_year.Add(index2.ToString());
+						Debug.Log(index2);
 					}
 					return data_year;
 				} else {
 					Debug.Log("from_to_Года не соответствуют: " + year_2_parse);
 				}
 			} else {
-				foreach(string loopObject1 in Regex.Split(year_2_parse, "\\D", RegexOptions.Multiline)) {
-					if(((int.TryParse(loopObject1, out _year_casual) && (_year_casual > 2010F)) && (_year_casual < curYearPlus1))) {
+				foreach(string loopObject2 in Regex.Split(year_2_parse, "\\D", RegexOptions.Multiline)) {
+					if(((int.TryParse(loopObject2, out _year_casual) && (_year_casual > 2010F)) && (_year_casual < curYearPlus1))) {
 						data_year.Add(_year_casual.ToString());
 					}
 				}
@@ -113,6 +141,20 @@ namespace MaxyGames.Generated {
 			return data_year;
 		}
 
+		/// <summary>
+		/// получение названий файлов бд
+		/// </summary>
+		public List<string> _f_dbSqliteList(bool update) {
+			//Обновление списка баз при старте или принудительно
+			if(((sqliteDBs.Count == 0) || update)) {
+				sqliteDBs.Clear();
+				foreach(string loopObject3 in Directory.EnumerateFiles("" + Application.dataPath + "/StreamingAssets/" + "files/pogodaiklimat2011/bd/", "*.sqlite", SearchOption.AllDirectories)) {
+					sqliteDBs.Add(loopObject3.Remove(loopObject3.LastIndexOf(".")).Substring((loopObject3.Remove(loopObject3.LastIndexOf(".")).LastIndexOf("/") + 1)));
+				}
+			}
+			return sqliteDBs;
+		}
+
 		private System.Collections.IEnumerator _function_group() {
 			float timelimit = 0.2F;
 			int PassCount = 0;
@@ -120,7 +162,7 @@ namespace MaxyGames.Generated {
 			base.StartCoroutine(LoadFromConfig());
 			yield return new WaitForSeconds(timelimit);
 			if(_switch.Equals("LoadFromConfig")) {
-				DictLinks = LinkGeneration(true);
+				DictLinks = LinkGeneration(false);
 				if((DictLinks.Count > 0)) {
 					while(!((DictLinks.Count == 0))) {
 						Debug.Log("Ссылок на скачивание создано: " + DictLinks.Count.ToString());
@@ -143,9 +185,9 @@ namespace MaxyGames.Generated {
 
 		private System.Collections.IEnumerator LoadFromConfig() {
 			linkFromConfig = new KeyValuePair<string, string>();
-			foreach(KeyValuePair<string, string> loopObject2 in Ini.Load("config.ini")) {
-				if(loopObject2.Key.StartsWith("pogodaiklimat2011")) {
-					linkFromConfig = loopObject2;
+			foreach(KeyValuePair<string, string> loopObject4 in Ini.Load("config.ini")) {
+				if(loopObject4.Key.StartsWith("pogodaiklimat2011")) {
+					linkFromConfig = loopObject4;
 					break;
 				}
 			}
@@ -186,22 +228,22 @@ namespace MaxyGames.Generated {
 			} else {
 				_link_base = linkFromConfig.Value;
 				//id=index
-				foreach(string loopObject3 in _indexArray()) {
-					_t_index = loopObject3;
+				foreach(string loopObject5 in _f_indexArray()) {
+					_t_index = loopObject5;
 					_link_Index = _link_base.Replace("$id", _t_index);
 					//set year
-					foreach(string loopObject4 in _yearArray()) {
-						_t_AllDatetimeClmn = sqlite.GetComponent<sqlite>().GetAllDatetimeClmn(_t_index, loopObject4);
-						if((int.Parse(loopObject4) <= curYear)) {
-							_t_year = int.Parse(loopObject4);
+					foreach(string loopObject6 in _f_yearArray()) {
+						_t_AllDatetimeClmn = sqlite.GetComponent<sqlite>().GetAllDatetimeClmn(_t_index, loopObject6);
+						if((int.Parse(loopObject6) <= curYear)) {
+							_t_year = int.Parse(loopObject6);
 							_link_IndexAndYear = _link_Index.Replace("$year", _t_year.ToString());
 							if(_t_year.Equals(curYear)) {
 								//set month max
 								_monthMax = (curMonth + 1);
 							}
 							//set month links
-							for(int index2 = 1; index2 < _monthMax; index2 += 1) {
-								_t_month = index2;
+							for(int index3 = 1; index3 < _monthMax; index3 += 1) {
+								_t_month = index3;
 								_t_DaysInMonth = System.DateTime.DaysInMonth(_t_year, _t_month);
 								//YYYY1231
 								_t_dateToCheck = _t_year.ToString() + (_t_month.ToString("D2") as string) + _t_DaysInMonth.ToString();
@@ -216,8 +258,8 @@ namespace MaxyGames.Generated {
 											//Вероятность что чего то лишнее-крайне мала. Вероятностью что чего то лишнего == недостающего ещё меньше. Так что пренебрегаем
 											AddMonth = true;
 											//Избыточный поиск недостающего\лишнего
-											for(int index3 = 1; index3 < (_t_DaysInMonth + 1); index3 += 1) {
-												_t_dayToCheck = _t_year.ToString() + (_t_month.ToString("D2") as string) + index3.ToString("D2");
+											for(int index4 = 1; index4 < (_t_DaysInMonth + 1); index4 += 1) {
+												_t_dayToCheck = _t_year.ToString() + (_t_month.ToString("D2") as string) + index4.ToString("D2");
 												//Часов(строк) в этих сутках
 												_t_HourInDay = (_t_AllDatetimeClmn.Replace(_t_dayToCheck, _t_dayToCheck + "%").Split(new char[] { '%' }).Length - 1);
 												if(!((8 == _t_HourInDay))) {
@@ -244,7 +286,6 @@ namespace MaxyGames.Generated {
 									}
 									_link_Final = _link_Final.Replace("$LastDay", _LastDay);
 									DictLinks1.Add(_link_Final, _t_index);
-									Debug.Log(_link_Final);
 								}
 							}
 						}
@@ -267,7 +308,7 @@ namespace MaxyGames.Generated {
 				new WaitForEndOfFrame();
 			}
 			if(float.TryParse(conn.GetResponseHeader("Content-Length"), out r)) {
-				Debug.Log("размер: " + r.ToString());
+				Debug.Log(r.ToString() + "| размер: " + url);
 				//+30% т.к. на сайтах сжатие. А так - чуть ближе к истине
 				return ((r / 3.2F) + r);
 			} else {
@@ -289,9 +330,9 @@ namespace MaxyGames.Generated {
 			List<string> full_tbl_strArr = new List<string>();
 			_switch = "!DownLoadData";
 			UnityWebRequest.ClearCookieCache();
-			foreach(KeyValuePair<string, string> loopObject5 in DictLinks) {
-				_index = loopObject5.Value;
-				_w_link = loopObject5.Key;
+			foreach(KeyValuePair<string, string> loopObject7 in DictLinks) {
+				_index = loopObject7.Value;
+				_w_link = loopObject7.Key;
 				using(UnityWebRequest value = UnityWebRequest.Get(_w_link)) {
 					uwr = value;
 					//wait up to one second to download the image
@@ -351,11 +392,11 @@ namespace MaxyGames.Generated {
 			}
 			row_left_nodes = html_doc.DocumentNode.SelectNodes("//div[@class='archive-table-left-column']//tr");
 			//Обработка строк левой таблицы (время-дата)
-			for(int index4 = 0; index4 < row_left_nodes.Count; index4 += 1) {
+			for(int index5 = 0; index5 < row_left_nodes.Count; index5 += 1) {
 				temp_left_row_str = "";
 				//ячейки
-				foreach(HtmlNode loopObject6 in row_left_nodes[index4].SelectNodes("td")) {
-					temp_left_row_str = temp_left_row_str + "." + loopObject6.InnerText;
+				foreach(HtmlNode loopObject8 in row_left_nodes[index5].SelectNodes("td")) {
+					temp_left_row_str = temp_left_row_str + "." + loopObject8.InnerText;
 				}
 				temp_left_tbl_strArr.Add(temp_left_row_str.Substring(1));
 			}
@@ -363,14 +404,14 @@ namespace MaxyGames.Generated {
 			//контроль на совпадение количества строк в таблицах (а вдруг?) (должно получится 20)
 			if((temp_left_tbl_strArr.Count == row_right_nodes.Count)) {
 				//Обработка строк правой таблицы-данные
-				for(int index5 = 1; index5 < temp_left_tbl_strArr.Count; index5 += 1) {
+				for(int index6 = 1; index6 < temp_left_tbl_strArr.Count; index6 += 1) {
 					temp_right_row_str = "";
 					//ячейки
-					foreach(HtmlNode loopObject7 in row_right_nodes[index5].SelectNodes("td")) {
-						temp_right_row_str = temp_right_row_str + "|" + loopObject7.InnerText;
+					foreach(HtmlNode loopObject9 in row_right_nodes[index6].SelectNodes("td")) {
+						temp_right_row_str = temp_right_row_str + "|" + loopObject9.InnerText;
 					}
 					//ГодМесяцДеньЧас
-					_t_date = year + temp_left_tbl_strArr[index5].Split(new char[] { '.' })[2] + temp_left_tbl_strArr[index5].Split(new char[] { '.' })[1].PadLeft(2, '0') + temp_left_tbl_strArr[index5].Split(new char[] { '.' })[0];
+					_t_date = year + temp_left_tbl_strArr[index6].Split(new char[] { '.' })[2] + temp_left_tbl_strArr[index6].Split(new char[] { '.' })[1].PadLeft(2, '0') + temp_left_tbl_strArr[index6].Split(new char[] { '.' })[0];
 					//Строка целиком
 					_t_data = _t_date + "|" + temp_right_row_str.Substring(1);
 					full_tbl_strArr1.Add(_t_data);
@@ -384,7 +425,7 @@ namespace MaxyGames.Generated {
 		private void DBInserter(List<string> full_tbl_strArr, string indexDB, string table_year) {
 			string q = "";
 			q = "REPLACE INTO \"" + table_year + "\" (\"date\",\"wind_dir\",\"wind_speed\",\"vis_range\",\"phenomena\",\"cloudy\",\"T\",\"Td\",\"f\",\"Te\",\"Tes\",\"Comfort\",\"P\",\"Po\",\"Tmin\",\"Tmax\",\"R\",\"R24\",\"S\") " + "VALUES (\"" + string.Join<System.String>("\"),(\"", full_tbl_strArr).Replace("|", "\",\"") + "\")";
-			Debug.Log(sqlite.GetComponent<sqlite>().InsertQueryTable(indexDB, q));
+			Debug.Log("Записей в Бд вставлено: " + sqlite.GetComponent<sqlite>().InsertQueryTable(indexDB, q).ToString());
 		}
 
 		public System.Collections.IEnumerator _t_writeToLog(string dataToLog) {
@@ -393,18 +434,10 @@ namespace MaxyGames.Generated {
 			yield break;
 		}
 
-		public List<string> _dbSqliteList(bool update) {
-			//Обновление списка баз при старте или принудительно
-			if((!((sqliteDBs is object)) || update)) {
-				//списка баз не было
-				sqliteDBs = new List<string>(Directory.EnumerateFiles("" + Application.dataPath + "/StreamingAssets/" + "files/pogodaiklimat2011/bd/", "*.sqlite", SearchOption.AllDirectories));
-			}
-			return sqliteDBs;
-		}
-
 		public void Update() {
 			if(Input.GetKeyUp(KeyCode.RightArrow)) {
-				_dbSqliteList(false);
+				Debug.Log("123");
+				UpdateInInputIndex();
 			}
 		}
 	}

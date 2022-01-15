@@ -1,4 +1,4 @@
-﻿#pragma warning disable
+#pragma warning disable
 using UnityEngine;
 using System.Collections.Generic;
 using MaxyGames.Generated;
@@ -15,7 +15,11 @@ namespace MaxyGames.Generated {
 		public MaxyGames.uNode.uNodeRuntime _sqlite = null;
 		public bool newTmpFolder = false;
 
-		public void Update() {}
+		public void Update() {
+			if(Input.GetKeyUp(KeyCode.UpArrow)) {
+				base.StartCoroutine(xlsxSet_ClosedXML("pogodaiklimat2011", "34848", "2011,2012", true));
+			}
+		}
 
 		public List<string> getSheetNames(NPOI.XSSF.UserModel.XSSFWorkbook wb) {
 			List<string> Sheets = null;
@@ -73,7 +77,7 @@ namespace MaxyGames.Generated {
 				//Года
 				foreach(string loopObject in "2015".Split(new char[] { ',' })) {
 					year_table_page = loopObject;
-					tableFromBD = new List<List<string>>();
+					tableFromBD = _sqlite.GetComponent<sqlite>().getDataUniversalLstLst(index_id, "SELECT * FROM \"" + year_table_page + "\" ORDER BY \"date\"");
 					if(!(SheetNames.Contains(year_table_page))) {
 						//Если нужной страницы нету, делаем копию того, что точно должна быть в наличии
 						xslxFile.GetSheet("2011").CopySheet(year_table_page);
@@ -157,7 +161,7 @@ namespace MaxyGames.Generated {
 				//Года
 				foreach(string loopObject3 in "2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021".Split(new char[] { ',' })) {
 					year_table_page1 = loopObject3;
-					tableFromBD1 = _sqlite.GetComponent<sqlite>().getData(index_id, "SELECT * FROM \"" + year_table_page1 + "\" ORDER BY \"date\"");
+					tableFromBD1 = _sqlite.GetComponent<sqlite>().getDataUniversalLstLst(index_id, "SELECT * FROM \"" + year_table_page1 + "\" ORDER BY \"date\"");
 					if(!(XLWB.Worksheets.Contains(year_table_page1))) {
 						XLWB.Worksheet("2011").CopyTo(year_table_page1);
 						Debug.Log("Новая копия, страница: " + year_table_page1);
