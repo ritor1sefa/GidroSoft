@@ -11,7 +11,9 @@ namespace MaxyGames.Generated {
 
 		private void Update() {
 			string variable0 = "";
-			if(Input.GetKeyUp(KeyCode.UpArrow)) {}
+			if(Input.GetKeyUp(KeyCode.UpArrow)) {
+				new _utillz()._2log(new _utillz()._ConvertStringRusLat("проВе ро+++=Чка"), false);
+			}
 		}
 
 		public void loadFromFiles() {
@@ -24,7 +26,7 @@ namespace MaxyGames.Generated {
 			path = Application.streamingAssetsPath + "/" + "tmp.txt";
 			file_data = File.ReadAllText(path);
 			tables = file_data.Split("Табли", System.StringSplitOptions.RemoveEmptyEntries);
-			new _Log()._2log("Количесто таблиц в файле: " + tables.Length.ToString(), true);
+			new _utillz()._2log("Количесто таблиц в файле: " + tables.Length.ToString(), false);
 			One_table_data = tables.GetValue(1).ToString();
 			//Get Number of table
 			N_table = Regex.Match(One_table_data, "ца\\D*(\\d+)\\.\\D*\\n", RegexOptions.None).Result("$1");
@@ -45,7 +47,6 @@ namespace MaxyGames.Generated {
 				//Бегает по строке - ищет приключений
 				for(index1 = row.IndexOfAny(new char[] { '╦', '┬' }); index1 > -1; index1 = row.IndexOfAny(new char[] { '┬', '╦' }, (index1 + 1))) {
 					row_indexs_delimeters.Add(index1);
-					new _Log()._2log(index1.ToString(), false);
 				}
 			}
 			return row_indexs_delimeters;
@@ -65,7 +66,6 @@ namespace MaxyGames.Generated {
 			List<string> _rowParsed = new List<string>();
 			row_indexs_delimeters.Sort();
 			oneTableParsed.Clear();
-			new _Log()._2log("parse", false);
 			foreach(string loopObject in table_data.Split(System.Environment.NewLine, System.StringSplitOptions.RemoveEmptyEntries)) {
 				line = loopObject;
 				if(Regex.IsMatch(line.Trim(), "^\\d{1,3}\\.")) {
@@ -79,11 +79,8 @@ namespace MaxyGames.Generated {
 					}
 					_rowParsed.Add(line.Substring(row_indexs_delimeters[row_indexs_delimeters.Count - 1], (line.Length - row_indexs_delimeters[row_indexs_delimeters.Count - 1])).Trim());
 					oneTableParsed.Add(_rowParsed);
-				} else {
-					new _Log()._2log(line, true);
 				}
 			}
-			new _Log()._2log("Total row: " + oneTableParsed.Count.ToString(), true);
 			return oneTableParsed;
 		}
 	}
