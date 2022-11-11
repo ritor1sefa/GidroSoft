@@ -145,7 +145,7 @@ namespace MaxyGames.Generated {
 				} else {
 					row = loopObject3;
 					//Бегает по строке - ищет приключений
-					for(index = row.IndexOfAny(new char[] { '╦', '┬', '|' }); index > -1; index = row.IndexOfAny(new char[] { '┬', '╦', '|' }, (index + 1))) {
+					for(index = row.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index > -1; index = row.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index + 1))) {
 						tmp_hash_ints.Add(index);
 					}
 				}
@@ -219,9 +219,12 @@ namespace MaxyGames.Generated {
 						}
 						_tableParsed.Add(_rowsParsed);
 					}
-				} else if((_rowsUnparsed[System.Math.Abs((_rowsUnparsed.IndexOf(line) - 1))].IndexOfAny(new char[] { '|', '=', '═' }) > 0)) {
-					new _utillz()._2log("Нужно склеить таблицу. ГодМесяц: " + N_year_N_month + "= Номер таблицы: " + N_table, true);
-					Debug.Log("Нужно склеить таблицу. ГодМесяц: " + N_year_N_month + "= Номер таблицы: " + N_table);
+				} else if((_rowsUnparsed[System.Math.Abs((_rowsUnparsed.IndexOf(line) - 1))].IndexOfAny(new char[] { '|', '=', '═', '¦' }) > 0)) {
+					//N12 не нужно проверять. вроде бы только 16 и 17.
+					if(!(N_year_N_month.Equals("12"))) {
+						new _utillz()._2log("Нужно склеить таблицу. ГодМесяц: " + N_year_N_month + "= Номер таблицы: " + N_table, true);
+						Debug.Log("Нужно склеить таблицу. ГодМесяц: " + N_year_N_month + "= Номер таблицы: " + N_table);
+					}
 				}
 			}
 			return _tableParsed;
