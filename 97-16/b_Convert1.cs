@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Mono.Data.Sqlite;
 using System.Data;
 using System.Linq;
+using TMPro;
 
 namespace MaxyGames.Generated {
 	public class b_Convert1 : MaxyGames.RuntimeBehaviour {
@@ -15,7 +16,13 @@ namespace MaxyGames.Generated {
 		public Dictionary<string, SqliteConnection> sql_Connections = new Dictionary<string, SqliteConnection>();
 		public Dictionary<string, SqliteCommand> sql_cmnds = new Dictionary<string, SqliteCommand>();
 		public Dictionary<string, SqliteDataReader> sql_readers = new Dictionary<string, SqliteDataReader>();
+		public string[] Files = new string[0];
+		public int currentFile = 0;
+		public bool variable5 = true;
+		public GameObject objectVariable;
+		public GameObject objectVariable1;
 		private int index;
+		public GameObject objectVariable2;
 
 		/// <summary>
 		/// sqlite запрос на выборку столбца данных по году+месяцу
@@ -24,7 +31,10 @@ namespace MaxyGames.Generated {
 		/// </summary>
 		private void Update() {
 			string variable0 = "";
-			if(Input.GetKeyUp(KeyCode.UpArrow)) {}
+			objectVariable.gameObject.GetComponent<TMPro.TMP_Text>().text = currentFile.ToString();
+			if((Files.Length > currentFile)) {
+				objectVariable1.gameObject.GetComponent<TMPro.TMP_Text>().text = Files[currentFile];
+			}
 		}
 
 		public void loadFromFiles() {
@@ -35,65 +45,70 @@ namespace MaxyGames.Generated {
 			string N_table = "";
 			string N_year_N_month = "";
 			List<string> _rowUnparsed = new List<string>();
-			path = Application.streamingAssetsPath + "/" + "tmp.txt";
-			file_data = File.ReadAllText(path);
-			tables = file_data.Trim().Split("Табли", System.StringSplitOptions.RemoveEmptyEntries);
-			new _utillz()._2log("Количесто таблиц в файле: " + tables.Length.ToString(), false);
-			foreach(object loopObject in tables) {
-				One_table_data = loopObject.ToString();
-				//Пропускаем "таблицы" где много точек = меню в начале файла
-				if((!(One_table_data.Contains(".....")) && One_table_data.StartsWith("ца"))) {
-					//Get Number of table
-					N_table = Regex.Match(One_table_data, "^ца\\D*(\\d+.*)\\..*\\n", RegexOptions.None).Result("$1");
-					switch(N_table) {
-						case "11": {
-							//Get subNumber of table N11&N21
-							N_table = Regex.Match(One_table_data, "ца\\D*(\\d+)\\..*(\\d+)\\).*\\n", RegexOptions.None).Result("$1_$2");
+			if((Files.Length > currentFile)) {
+				path = Files[currentFile];
+				new _utillz()._2log(path, false);
+				currentFile = (currentFile + 1);
+				file_data = File.ReadAllText(path);
+				tables = file_data.Trim().Split("Табли", System.StringSplitOptions.RemoveEmptyEntries);
+				new _utillz()._2log("Количесто таблиц в файле: " + tables.Length.ToString(), false);
+				foreach(object loopObject in tables) {
+					One_table_data = loopObject.ToString();
+					//Пропускаем "таблицы" где много точек = меню в начале файла
+					if((!(One_table_data.Contains(".....")) && One_table_data.StartsWith("ца"))) {
+						//Get Number of table
+						N_table = Regex.Match(One_table_data, "^ца\\D*(\\d+.*)\\..*\\n", RegexOptions.None).Result("$1");
+						switch(N_table) {
+							case "11": {
+								//Get subNumber of table N11&N21
+								N_table = Regex.Match(One_table_data, "ца\\D*(\\d+)\\..*(\\d+)\\).*\\n", RegexOptions.None).Result("$1_$2");
+							}
+							break;
+							case "21": {
+								//Get subNumber of table N11&N21
+								N_table = Regex.Match(One_table_data, "ца\\D*(\\d+)\\..*(\\d+)\\).*\\n", RegexOptions.None).Result("$1_$2");
+							}
+							break;
 						}
-						break;
-						case "21": {
-							//Get subNumber of table N11&N21
-							N_table = Regex.Match(One_table_data, "ца\\D*(\\d+)\\..*(\\d+)\\).*\\n", RegexOptions.None).Result("$1_$2");
+						//Пропускаемые таблицы
+						switch(N_table) {
+							case "3": {
+							}
+							break;
+							case "5": {
+							}
+							break;
+							case "9": {
+							}
+							break;
+							case "10": {
+							}
+							break;
+							case "18": {
+							}
+							break;
+							case "19": {
+							}
+							break;
+							case "22": {
+							}
+							break;
+							case "4a": {
+							}
+							break;
+							default: {
+								cachedValue = Regex.Match(One_table_data, "Месяц\\D*(\\d+)\\D*Год\\D*(\\d+)", RegexOptions.None);
+								N_year_N_month = cachedValue.Result("y$2_m$1");
+								_rowUnparsed = splitTable(One_table_data, N_table);
+								sql_insertTables(parseRow(_alllndexOfDelimeters(_rowUnparsed), _rowUnparsed, N_table, N_year_N_month), N_table, N_year_N_month);
+							}
+							break;
 						}
-						break;
-					}
-					//Пропускаемые таблицы
-					switch(N_table) {
-						case "3": {
-						}
-						break;
-						case "5": {
-						}
-						break;
-						case "9": {
-						}
-						break;
-						case "10": {
-						}
-						break;
-						case "18": {
-						}
-						break;
-						case "19": {
-						}
-						break;
-						case "22": {
-						}
-						break;
-						case "4a": {
-						}
-						break;
-						default: {
-							cachedValue = Regex.Match(One_table_data, "Месяц\\D*(\\d+)\\D*Год\\D*(\\d+)", RegexOptions.None);
-							N_year_N_month = cachedValue.Result("y$2_m$1");
-							_rowUnparsed = splitTable(One_table_data, N_table);
-							sql_insertTables(parseRow(_alllndexOfDelimeters(_rowUnparsed), _rowUnparsed, N_table, N_year_N_month), N_table, N_year_N_month);
-						}
-						break;
 					}
 				}
+				sql_close();
+				variable5 = true;
 			}
-			sql_close();
 		}
 
 		/// <summary>
@@ -221,7 +236,7 @@ namespace MaxyGames.Generated {
 					}
 				} else if((_rowsUnparsed[System.Math.Abs((_rowsUnparsed.IndexOf(line) - 1))].IndexOfAny(new char[] { '|', '=', '═', '¦' }) > 0)) {
 					//N12 не нужно проверять. вроде бы только 16 и 17.
-					if(!(N_year_N_month.Equals("12"))) {
+					if(!(N_year_N_month.Contains("12"))) {
 						new _utillz()._2log("Нужно склеить таблицу. ГодМесяц: " + N_year_N_month + "= Номер таблицы: " + N_table, true);
 						Debug.Log("Нужно склеить таблицу. ГодМесяц: " + N_year_N_month + "= Номер таблицы: " + N_table);
 					}
@@ -236,13 +251,13 @@ namespace MaxyGames.Generated {
 		private bool sql_connect(string db_name) {
 			string path1 = "";
 			SqliteConnection connection = default(SqliteConnection);
-			path1 = Application.streamingAssetsPath + "/" + "files/" + db_name + ".sqlite";
+			path1 = Application.streamingAssetsPath + "/" + "files/bd/" + db_name + ".sqlite";
 			if(sql_Connections.ContainsKey(db_name)) {
 				return true;
 			} else {
 				//Копирование пустой бд в новый файл
 				if(!(File.Exists(path1))) {
-					File.Copy(Application.streamingAssetsPath + "/" + "files/" + "_empty" + ".sqlite", path1, false);
+					File.Copy(Application.streamingAssetsPath + "/" + "files/bd/" + "_empty" + ".sqlite", path1, false);
 				}
 				connection = new SqliteConnection("URI=file:" + path1);
 				connection.Open();
@@ -470,6 +485,23 @@ namespace MaxyGames.Generated {
 				}
 			}
 			return new List<string>();
+		}
+
+		private void Start() {
+			Files = Directory.GetFiles("D:\\__job\\2022\\13_юфо_ежемесячники\\txt\\", "*.txt");
+			objectVariable2.gameObject.GetComponent<TMPro.TMP_Text>().text = Files.Length.ToString();
+		}
+
+		public System.Collections.IEnumerator NewFunction() {
+			while(variable5) {
+				variable5 = false;
+				yield return new WaitForSeconds(0.5F);
+				loadFromFiles();
+			}
+		}
+
+		public void button() {
+			base.StartCoroutine(NewFunction());
 		}
 	}
 }
