@@ -87,7 +87,7 @@ namespace MaxyGames.Generated {
 							cachedValue = Regex.Match(One_table_data, "Месяц\\D*(\\d+)\\D*Год\\D*(\\d+)", RegexOptions.None);
 							N_year_N_month = cachedValue.Result("y$2_m$1");
 							_rowUnparsed = splitTable(One_table_data, N_table);
-							sql_insertTables(parseRow(_alllndexOfDelimeters(_rowUnparsed), _rowUnparsed, N_table), N_table, N_year_N_month);
+							sql_insertTables(parseRow(_alllndexOfDelimeters(_rowUnparsed), _rowUnparsed, N_table, N_year_N_month), N_table, N_year_N_month);
 						}
 						break;
 					}
@@ -156,7 +156,7 @@ namespace MaxyGames.Generated {
 		/// <summary>
 		/// Пролучаем массив строк-ячеек из таблицы, чистые и обработанные
 		/// </summary>
-		public List<List<string>> parseRow(List<int> row_indexs_delimeters, List<string> _rowsUnparsed, string N_table) {
+		public List<List<string>> parseRow(List<int> row_indexs_delimeters, List<string> _rowsUnparsed, string N_table, string N_year_N_month) {
 			string tokenToSplitBy = "|";
 			int insCount = -1;
 			string line = "";
@@ -219,6 +219,9 @@ namespace MaxyGames.Generated {
 						}
 						_tableParsed.Add(_rowsParsed);
 					}
+				} else if((_rowsUnparsed[System.Math.Abs((_rowsUnparsed.IndexOf(line) - 1))].IndexOfAny(new char[] { '|', '=', '═' }) > 0)) {
+					new _utillz()._2log("Нужно склеить таблицу. ГодМесяц: " + N_year_N_month + "= Номер таблицы: " + N_table, true);
+					Debug.Log("Нужно склеить таблицу. ГодМесяц: " + N_year_N_month + "= Номер таблицы: " + N_table);
 				}
 			}
 			return _tableParsed;
