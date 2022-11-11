@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Mono.Data.Sqlite;
 using System.Data;
+using System.Linq;
 
 namespace MaxyGames.Generated {
 	public class b_Convert1 : MaxyGames.RuntimeBehaviour {
@@ -13,7 +14,7 @@ namespace MaxyGames.Generated {
 		public Dictionary<string, SqliteConnection> sql_Connections = new Dictionary<string, SqliteConnection>();
 		public Dictionary<string, SqliteCommand> sql_cmnds = new Dictionary<string, SqliteCommand>();
 		public Dictionary<string, SqliteDataReader> sql_readers = new Dictionary<string, SqliteDataReader>();
-		private int index1;
+		private int index;
 
 		/// <summary>
 		/// sqlite запрос на выборку столбца данных по году+месяцу
@@ -42,14 +43,15 @@ namespace MaxyGames.Generated {
 				if(One_table_data.StartsWith("ца")) {
 					//Get Number of table
 					N_table = Regex.Match(One_table_data, "ца\\D*(\\d+)\\..*\\n", RegexOptions.None).Result("$1");
-					if(N_table.Contains("11")) {
-						//Get subNumber of table N11
+					//Переделать на свитч?
+					if("11." + "21.".Contains(N_table)) {
+						//Get subNumber of table N11&N21
 						N_table = Regex.Match(One_table_data, "ца\\D*(\\d+)\\..*(\\d+)\\).*\\n", RegexOptions.None).Result("$1_$2");
 					}
 					cachedValue = Regex.Match(One_table_data, "Месяц\\D*(\\d+)\\D*Год\\D*(\\d+)", RegexOptions.None);
 					N_year_N_month = cachedValue.Result("y$2_m$1");
 					_rowUnparsed = splitTable(One_table_data, N_table);
-					sql_insertTables(parseRow(_alllndexOfDelimeters(_rowUnparsed), _rowUnparsed), N_table, N_year_N_month);
+					sql_insertTables(parseRow(_alllndexOfDelimeters(_rowUnparsed), _rowUnparsed, N_table), N_table, N_year_N_month);
 				}
 			}
 			sql_close();
@@ -64,20 +66,24 @@ namespace MaxyGames.Generated {
 			_rowsUnparsed.Clear();
 			_rowsUnparsed = new List<string>();
 			_2thPart = new List<string>();
-			//возможно заменить на свитч?
-			if(N_table.Equals("12")) {
-				//пилим 12 таблицу пополам
-				foreach(string loopObject1 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.RemoveEmptyEntries)) {
-					_rowsUnparsed.Add(loopObject1.Substring(0, (loopObject1.Length / 2)));
-					_2thPart.Add(loopObject1.Substring((loopObject1.Length / 2), (loopObject1.Length - (loopObject1.Length / 2))));
+			switch(N_table) {
+				case "12": {
+					//пилим 12 таблицу пополам
+					foreach(string loopObject1 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
+						_rowsUnparsed.Add(loopObject1.Substring(0, (loopObject1.Length / 2)));
+						_2thPart.Add(loopObject1.Substring((loopObject1.Length / 2), (loopObject1.Length - (loopObject1.Length / 2))));
+					}
+					//склеиваем таблицы
+					_rowsUnparsed.AddRange(_2thPart);
 				}
-				//склеиваем таблицы
-				_rowsUnparsed.AddRange(_2thPart);
-			} else {
-				//непилимые таблицы
-				foreach(string loopObject2 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.RemoveEmptyEntries)) {
-					_rowsUnparsed.Add((loopObject2 as string));
+				break;
+				default: {
+					//непилимые таблицы
+					foreach(string loopObject2 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
+						_rowsUnparsed.Add((loopObject2 as string));
+					}
 				}
+				break;
 			}
 			return _rowsUnparsed;
 		}
@@ -86,32 +92,27 @@ namespace MaxyGames.Generated {
 		/// Extract all indexes of clmn delimiters
 		/// </summary>
 		private List<int> _alllndexOfDelimeters(List<string> _rowsUnparsed) {
-			List<int> row_indexs_delimeters = new List<int>();
 			string row = "";
 			string[] table_data_splited = new string[0];
-			int count_headers = 20;
-			row_indexs_delimeters = new List<int>();
-			row_indexs_delimeters.Clear();
-			//на случай если строк мало
-			//20-с потолка, поправить если что
-			if((_rowsUnparsed.Count < 20)) {
-				count_headers = _rowsUnparsed.Count;
-			}
-			//Берёт только первые строки - шапку
-			for(int index = 0; index < count_headers; index += 1) {
-				row = _rowsUnparsed[index];
-				//Бегает по строке - ищет приключений
-				for(index1 = row.IndexOfAny(new char[] { '╦', '┬' }); index1 > -1; index1 = row.IndexOfAny(new char[] { '┬', '╦' }, (index1 + 1))) {
-					row_indexs_delimeters.Add(index1);
+			HashSet<int> tmp_hash_ints = new HashSet<int>();
+			foreach(string loopObject3 in _rowsUnparsed) {
+				if(Regex.IsMatch(loopObject3.Trim(), "^\\d{1,3}\\.")) {
+					return Enumerable.ToList<System.Int32>(tmp_hash_ints);
+				} else {
+					row = loopObject3;
+					//Бегает по строке - ищет приключений
+					for(index = row.IndexOfAny(new char[] { '╦', '┬', '|' }); index > -1; index = row.IndexOfAny(new char[] { '┬', '╦', '|' }, (index + 1))) {
+						tmp_hash_ints.Add(index);
+					}
 				}
 			}
-			return row_indexs_delimeters;
+			return Enumerable.ToList<System.Int32>(tmp_hash_ints);
 		}
 
 		/// <summary>
 		/// Пролучаем массив строк-ячеек из таблицы, чистые и обработанные
 		/// </summary>
-		public List<List<string>> parseRow(List<int> row_indexs_delimeters, List<string> _rowsUnparsed) {
+		public List<List<string>> parseRow(List<int> row_indexs_delimeters, List<string> _rowsUnparsed, string N_table) {
 			string tokenToSplitBy = "|";
 			int insCount = -1;
 			string line = "";
@@ -120,24 +121,45 @@ namespace MaxyGames.Generated {
 			int item = 0;
 			List<List<string>> _tableParsed = new List<List<string>>();
 			List<string> _rowsParsed = default(List<string>);
+			bool headerSkiped = false;
+			string tmp_db_name = "";
+			int tmp_startLine = 0;
 			row_indexs_delimeters.Sort();
 			_tableParsed = new List<List<string>>();
+			//Для таблиц с несколькими строчками. 14+
+			headerSkiped = false;
 			//построчная обработка
-			foreach(string loopObject3 in _rowsUnparsed) {
-				line = loopObject3;
-				if(Regex.IsMatch(line.Trim(), "^\\d{1,3}\\.")) {
+			foreach(string loopObject4 in _rowsUnparsed) {
+				line = loopObject4;
+				if(Regex.IsMatch(line, "^ +═")) {
+					//Сдвиг строки для кривой таблицы N12, второй её половины
+					tmp_startLine = (line.Length - line.TrimStart().Length);
+				}
+				if((Regex.IsMatch(line.Trim(), "^\\d{1,3}\\.") || headerSkiped)) {
+					headerSkiped = true;
 					_rowsParsed = new List<string>();
-					//Оставляем только номер, потому что одинаковые названия на "русском" разные.
-					_rowsParsed.Add(Regex.Match(line.Substring(0, row_indexs_delimeters[0]), "\\D*(\\d+)\\.\\D*", RegexOptions.None).Result("$1"));
-					//1й вариант. вроде чуть быстрее ~15 секунд. против 19ти
-					for(int index2 = 0; index2 < (row_indexs_delimeters.Count - 1); index2 += 1) {
-						from = row_indexs_delimeters[index2];
-						length = (row_indexs_delimeters[(index2 + 1)] - from);
-						_rowsParsed.Add(line.TrimStart().Substring(from, length).Trim());
+					//Проверка на конец таблицы
+					if(((row_indexs_delimeters[0] > line.Length) || string.IsNullOrEmpty(line.Substring(row_indexs_delimeters[0], (line.Length - row_indexs_delimeters[0])).Trim()))) {
+						headerSkiped = false;
+					} else {
+						if(string.IsNullOrEmpty(line.Substring(0, row_indexs_delimeters[0]).Trim())) {
+							//добавляем данные в первый столбец
+							line = tmp_db_name + line.Substring(tmp_db_name.Length, (line.Length - tmp_db_name.Length));
+						} else {
+							//сохранение имени бд, на случай пустой следующей строки
+							tmp_db_name = Regex.Match(line.Substring(0, row_indexs_delimeters[0]), "^\\D*(\\d+)\\.", RegexOptions.None).Result("$1");
+						}
+						//Оставляем только номер, потому что одинаковые названия на "русском" разные.
+						_rowsParsed.Add(tmp_db_name);
+						for(int index1 = 0; index1 < (row_indexs_delimeters.Count - 1); index1 += 1) {
+							from = row_indexs_delimeters[index1];
+							length = (row_indexs_delimeters[(index1 + 1)] - from);
+							_rowsParsed.Add(line.Substring((from + tmp_startLine), length).Trim());
+						}
+						//последний столбец
+						_rowsParsed.Add(line.Substring((row_indexs_delimeters[row_indexs_delimeters.Count - 1] + tmp_startLine), (line.Length - (row_indexs_delimeters[row_indexs_delimeters.Count - 1] + tmp_startLine))).Trim());
+						_tableParsed.Add(_rowsParsed);
 					}
-					//последний столбец
-					_rowsParsed.Add(line.Substring(row_indexs_delimeters[row_indexs_delimeters.Count - 1], (line.Length - row_indexs_delimeters[row_indexs_delimeters.Count - 1])).Trim());
-					_tableParsed.Add(_rowsParsed);
 				}
 			}
 			return _tableParsed;
@@ -169,11 +191,11 @@ namespace MaxyGames.Generated {
 		/// нифига не работает почему то, на большом количестве разных таблиц.
 		/// </summary>
 		public void sql_close() {
-			foreach(KeyValuePair<string, SqliteCommand> loopObject4 in sql_cmnds) {
-				loopObject4.Value.Dispose();
-			}
-			foreach(KeyValuePair<string, SqliteConnection> loopObject5 in sql_Connections) {
+			foreach(KeyValuePair<string, SqliteCommand> loopObject5 in sql_cmnds) {
 				loopObject5.Value.Dispose();
+			}
+			foreach(KeyValuePair<string, SqliteConnection> loopObject6 in sql_Connections) {
+				loopObject6.Value.Dispose();
 			}
 			SqliteConnection.ClearAllPools();
 			System.GC.Collect();
@@ -234,11 +256,13 @@ namespace MaxyGames.Generated {
 			string q = "";
 			string q_simple = "";
 			List<string> _11_2_tmp = default(List<string>);
-			foreach(List<string> loopObject6 in q_table) {
-				row1 = loopObject6;
+			List<string> _21_2_tmp = default(List<string>);
+			foreach(List<string> loopObject7 in q_table) {
+				row1 = loopObject7;
 				db_name = row1[0];
 				//убираем название бд из строки. ненужно
 				row1.RemoveAt(0);
+				Debug.Log("файл:" + db_name);
 				q_simple = "REPLACE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
 				//set Q in N11 table
 				switch(N_table) {
@@ -282,43 +306,64 @@ namespace MaxyGames.Generated {
 					}
 					break;
 					case "11_1": {
+						//N11_1
 						q = "REPLACE INTO '" + "11" + "' " + "('N_year_N_month','dl','dj','mp','ld','jo','c','cl','zc','kc','kl','to','cm','clm','tom','gd','il','r','i','gl','izm','glTs','dm','T','tp')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "11_2": {
+						//N11_2
 						_11_2_tmp = new List<string>();
-						for(int index3 = 0; index3 < "tl,tlp,tz,tlz,toc,tzo,tt,tto,mgc,p,mc,mo,mn,mm,mg,pp,pb,pbIL,G,pc,Sh,V,sCh,mJ".Split(",", System.StringSplitOptions.None).Length; index3 += 1) {
-							_11_2_tmp.Add(("tl,tlp,tz,tlz,toc,tzo,tt,tto,mgc,p,mc,mo,mn,mm,mg,pp,pb,pbIL,G,pc,Sh,V,sCh,mJ".Split(",", System.StringSplitOptions.None).GetValue(index3) as string) + " = " + "'" + row1[index3] + "'");
+						for(int index2 = 0; index2 < "tl,tlp,tz,tlz,toc,tzo,tt,tto,mgc,p,mc,mo,mn,mm,mg,pp,pb,pbIL,G,pc,Sh,V,sCh,mJ".Split(",", System.StringSplitOptions.None).Length; index2 += 1) {
+							_11_2_tmp.Add(("tl,tlp,tz,tlz,toc,tzo,tt,tto,mgc,p,mc,mo,mn,mm,mg,pp,pb,pbIL,G,pc,Sh,V,sCh,mJ".Split(",", System.StringSplitOptions.None).GetValue(index2) as string) + " = " + "'" + row1[index2] + "'");
 						}
 						q = "UPDATE '" + "11" + "'" + " SET " + string.Join<System.String>(", ", _11_2_tmp) + " WHERE " + "N_year_N_month='" + N_year_N_month + "'";
 					}
 					break;
 					case "12": {
+						//N12
+						q = "REPLACE INTO '" + "12" + "' " + "('N_year_N_month','dj','c','cm','tt','izm','gl','mm','gd','G')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
+					}
+					break;
+					case "13": {
 						q = q_simple;
 					}
 					break;
-					case "": {
+					case "14": {
+						//N14&N15
+						q = "REPLACE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_h:m=" + Regex.Replace(row1[1], " +", ":") + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
-					case "": {
+					case "15": {
+						//N14&N15
+						q = "REPLACE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_h:m=" + Regex.Replace(row1[1], " +", ":") + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
-					case "": {
+					case "16": {
+						//N16&N17
+						q = "REPLACE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_d" + row1[6] + "_trace:" + row1[5] + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
-					case "": {
+					case "17": {
+						//N16&N17
+						q = "REPLACE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_d" + row1[6] + "_trace:" + row1[5] + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
-					case "": {
+					case "20": {
+						q = q_simple;
 					}
 					break;
-					case "": {
+					case "21_1": {
+						//N21_1
+						q = "REPLACE INTO '" + "21" + "' " + "('N_year_N_month','020_mid', '020_max', '020_min', '040_mid', '040_max', '040_min', '080_mid', '080_max', '080_min', '120_mid', '120_max', '120_min')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
-					case "": {
-					}
-					break;
-					case "": {
+					case "21_2": {
+						//N21_2
+						_21_2_tmp = new List<string>();
+						for(int index3 = 0; index3 < "160_mid, 160_max, 160_min, 240_mid, 240_max, 240_min, 320_mid, 320_max, 320_min, dayFrz_002, dayFrz_005, dayFrz_010, dayFrz_015, dayFrz_02, dayFrz_04, dayFrz_08, dayFrz_12, dayFrz_16, dayFrz_24, dayFrz_32".Split(",", System.StringSplitOptions.None).Length; index3 += 1) {
+							_21_2_tmp.Add(("160_mid, 160_max, 160_min, 240_mid, 240_max, 240_min, 320_mid, 320_max, 320_min, dayFrz_002, dayFrz_005, dayFrz_010, dayFrz_015, dayFrz_02, dayFrz_04, dayFrz_08, dayFrz_12, dayFrz_16, dayFrz_24, dayFrz_32".Split(",", System.StringSplitOptions.None).GetValue(index3) as string) + " = " + "'" + row1[index3] + "'");
+						}
+						q = "UPDATE '" + "11" + "'" + " SET " + string.Join<System.String>(", ", _21_2_tmp) + " WHERE " + "N_year_N_month='" + N_year_N_month + "'";
 					}
 					break;
 					case "": {
