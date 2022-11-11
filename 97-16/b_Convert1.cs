@@ -11,6 +11,7 @@ using System.Linq;
 namespace MaxyGames.Generated {
 	public class b_Convert1 : MaxyGames.RuntimeBehaviour {
 		private Match cachedValue;
+		private string cachedValue1;
 		public Dictionary<string, SqliteConnection> sql_Connections = new Dictionary<string, SqliteConnection>();
 		public Dictionary<string, SqliteCommand> sql_cmnds = new Dictionary<string, SqliteCommand>();
 		public Dictionary<string, SqliteDataReader> sql_readers = new Dictionary<string, SqliteDataReader>();
@@ -40,18 +41,56 @@ namespace MaxyGames.Generated {
 			new _utillz()._2log("Количесто таблиц в файле: " + tables.Length.ToString(), false);
 			foreach(object loopObject in tables) {
 				One_table_data = loopObject.ToString();
-				if(One_table_data.StartsWith("ца")) {
+				//Пропускаем "таблицы" где много точек = меню в начале файла
+				if((!(One_table_data.Contains(".....")) && One_table_data.StartsWith("ца"))) {
 					//Get Number of table
-					N_table = Regex.Match(One_table_data, "ца\\D*(\\d+)\\..*\\n", RegexOptions.None).Result("$1");
-					//Переделать на свитч?
-					if("11." + "21.".Contains(N_table)) {
-						//Get subNumber of table N11&N21
-						N_table = Regex.Match(One_table_data, "ца\\D*(\\d+)\\..*(\\d+)\\).*\\n", RegexOptions.None).Result("$1_$2");
+					N_table = Regex.Match(One_table_data, "^ца\\D*(\\d+.*)\\..*\\n", RegexOptions.None).Result("$1");
+					switch(N_table) {
+						case "11": {
+							//Get subNumber of table N11&N21
+							N_table = Regex.Match(One_table_data, "ца\\D*(\\d+)\\..*(\\d+)\\).*\\n", RegexOptions.None).Result("$1_$2");
+						}
+						break;
+						case "21": {
+							//Get subNumber of table N11&N21
+							N_table = Regex.Match(One_table_data, "ца\\D*(\\d+)\\..*(\\d+)\\).*\\n", RegexOptions.None).Result("$1_$2");
+						}
+						break;
 					}
-					cachedValue = Regex.Match(One_table_data, "Месяц\\D*(\\d+)\\D*Год\\D*(\\d+)", RegexOptions.None);
-					N_year_N_month = cachedValue.Result("y$2_m$1");
-					_rowUnparsed = splitTable(One_table_data, N_table);
-					sql_insertTables(parseRow(_alllndexOfDelimeters(_rowUnparsed), _rowUnparsed, N_table), N_table, N_year_N_month);
+					//Пропускаемые таблицы
+					switch(N_table) {
+						case "3": {
+						}
+						break;
+						case "5": {
+						}
+						break;
+						case "9": {
+						}
+						break;
+						case "10": {
+						}
+						break;
+						case "18": {
+						}
+						break;
+						case "19": {
+						}
+						break;
+						case "22": {
+						}
+						break;
+						case "4a": {
+						}
+						break;
+						default: {
+							cachedValue = Regex.Match(One_table_data, "Месяц\\D*(\\d+)\\D*Год\\D*(\\d+)", RegexOptions.None);
+							N_year_N_month = cachedValue.Result("y$2_m$1");
+							_rowUnparsed = splitTable(One_table_data, N_table);
+							sql_insertTables(parseRow(_alllndexOfDelimeters(_rowUnparsed), _rowUnparsed, N_table), N_table, N_year_N_month);
+						}
+						break;
+					}
 				}
 			}
 			sql_close();
@@ -68,13 +107,18 @@ namespace MaxyGames.Generated {
 			_2thPart = new List<string>();
 			switch(N_table) {
 				case "12": {
-					//пилим 12 таблицу пополам
-					foreach(string loopObject1 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
-						_rowsUnparsed.Add(loopObject1.Substring(0, (loopObject1.Length / 2)));
-						_2thPart.Add(loopObject1.Substring((loopObject1.Length / 2), (loopObject1.Length - (loopObject1.Length / 2))));
+					//Если новые 12 таблицы делить не надо
+					if((One_table_data.IndexOfAny(new char[] { '=', '|' }) > 0)) {
+						One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None);
+					} else {
+						//пилим 12 таблицу пополам
+						foreach(string loopObject1 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
+							_rowsUnparsed.Add(loopObject1.Substring(0, (loopObject1.Length / 2)));
+							_2thPart.Add(loopObject1.Substring((loopObject1.Length / 2), (loopObject1.Length - (loopObject1.Length / 2))));
+						}
+						//склеиваем таблицы
+						_rowsUnparsed.AddRange(_2thPart);
 					}
-					//склеиваем таблицы
-					_rowsUnparsed.AddRange(_2thPart);
 				}
 				break;
 				default: {
@@ -124,6 +168,7 @@ namespace MaxyGames.Generated {
 			bool headerSkiped = false;
 			string tmp_db_name = "";
 			int tmp_startLine = 0;
+			string tmp_line = "";
 			row_indexs_delimeters.Sort();
 			_tableParsed = new List<List<string>>();
 			//Для таблиц с несколькими строчками. 14+
@@ -140,7 +185,9 @@ namespace MaxyGames.Generated {
 					_rowsParsed = new List<string>();
 					//Проверка на конец таблицы
 					if(((row_indexs_delimeters[0] > line.Length) || string.IsNullOrEmpty(line.Substring(row_indexs_delimeters[0], (line.Length - row_indexs_delimeters[0])).Trim()))) {
-						headerSkiped = false;
+						if(!((tmp_line.IndexOfAny(new char[] { '|', '=' }) > 0))) {
+							headerSkiped = false;
+						}
 					} else {
 						if(string.IsNullOrEmpty(line.Substring(0, row_indexs_delimeters[0]).Trim())) {
 							//добавляем данные в первый столбец
@@ -148,16 +195,28 @@ namespace MaxyGames.Generated {
 						} else {
 							//сохранение имени бд, на случай пустой следующей строки
 							tmp_db_name = Regex.Match(line.Substring(0, row_indexs_delimeters[0]), "^\\D*(\\d+)\\.", RegexOptions.None).Result("$1");
+							tmp_line = line;
 						}
 						//Оставляем только номер, потому что одинаковые названия на "русском" разные.
 						_rowsParsed.Add(tmp_db_name);
 						for(int index1 = 0; index1 < (row_indexs_delimeters.Count - 1); index1 += 1) {
 							from = row_indexs_delimeters[index1];
 							length = (row_indexs_delimeters[(index1 + 1)] - from);
-							_rowsParsed.Add(line.Substring((from + tmp_startLine), length).Trim());
+							//Проверка на неполную строчку. заполнение @
+							if((line.Length >= (length + (from + tmp_startLine)))) {
+								_rowsParsed.Add(line.Substring((from + tmp_startLine), length).Trim());
+							} else {
+								_rowsParsed.Add("@");
+							}
 						}
-						//последний столбец
-						_rowsParsed.Add(line.Substring((row_indexs_delimeters[row_indexs_delimeters.Count - 1] + tmp_startLine), (line.Length - (row_indexs_delimeters[row_indexs_delimeters.Count - 1] + tmp_startLine))).Trim());
+						//Проверка на неполную строчку. заполнение @
+						if((line.Length > (row_indexs_delimeters[row_indexs_delimeters.Count - 1] + tmp_startLine))) {
+							//последний столбец
+							_rowsParsed.Add(line.Substring((row_indexs_delimeters[row_indexs_delimeters.Count - 1] + tmp_startLine), (line.Length - (row_indexs_delimeters[row_indexs_delimeters.Count - 1] + tmp_startLine))).Trim());
+						} else {
+							_rowsParsed.Add("@");
+							new _utillz()._2log(N_table + "=" + line + "=" + "Строка не полная. в бд вместо недостающих ячееквнесено '@'", true);
+						}
 						_tableParsed.Add(_rowsParsed);
 					}
 				}
@@ -256,7 +315,7 @@ namespace MaxyGames.Generated {
 			string q = "";
 			string q_simple = "";
 			List<string> _11_2_tmp = default(List<string>);
-			List<string> _21_2_tmp = default(List<string>);
+			string tmp_21_2 = "";
 			foreach(List<string> loopObject7 in q_table) {
 				row1 = loopObject7;
 				db_name = row1[0];
@@ -320,8 +379,13 @@ namespace MaxyGames.Generated {
 					}
 					break;
 					case "12": {
-						//N12
-						q = "REPLACE INTO '" + "12" + "' " + "('N_year_N_month','dj','c','cm','tt','izm','gl','mm','gd','G')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
+						//если новая 12 таблица - то обычный. если старая (короткая) то false
+						if((row1.Count > 10)) {
+							q = q_simple;
+						} else {
+							//N12
+							q = "REPLACE INTO '" + "12" + "' " + "('N_year_N_month','dj','c','cm','tt','izm','gl','mm','gd','G')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
+						}
 					}
 					break;
 					case "13": {
@@ -352,18 +416,18 @@ namespace MaxyGames.Generated {
 						q = q_simple;
 					}
 					break;
-					case "21_1": {
-						//N21_1
+					case "21_2": {
+						//N21_2
 						q = "REPLACE INTO '" + "21" + "' " + "('N_year_N_month','020_mid', '020_max', '020_min', '040_mid', '040_max', '040_min', '080_mid', '080_max', '080_min', '120_mid', '120_max', '120_min')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
-					case "21_2": {
-						//N21_2
-						_21_2_tmp = new List<string>();
-						for(int index3 = 0; index3 < "160_mid, 160_max, 160_min, 240_mid, 240_max, 240_min, 320_mid, 320_max, 320_min, dayFrz_002, dayFrz_005, dayFrz_010, dayFrz_015, dayFrz_02, dayFrz_04, dayFrz_08, dayFrz_12, dayFrz_16, dayFrz_24, dayFrz_32".Split(",", System.StringSplitOptions.None).Length; index3 += 1) {
-							_21_2_tmp.Add(("160_mid, 160_max, 160_min, 240_mid, 240_max, 240_min, 320_mid, 320_max, 320_min, dayFrz_002, dayFrz_005, dayFrz_010, dayFrz_015, dayFrz_02, dayFrz_04, dayFrz_08, dayFrz_12, dayFrz_16, dayFrz_24, dayFrz_32".Split(",", System.StringSplitOptions.None).GetValue(index3) as string) + " = " + "'" + row1[index3] + "'");
+					case "21_3": {
+						cachedValue1 = "'160_mid', '160_max', '160_min', '240_mid', '240_max', '240_min', '320_mid', '320_max', '320_min', 'dayFrz_002', 'dayFrz_005', 'dayFrz_010', 'dayFrz_015', 'dayFrz_02', 'dayFrz_04', 'dayFrz_08', 'dayFrz_12', 'dayFrz_16', 'dayFrz_24', 'dayFrz_32'";
+						//N21_3
+						for(int index3 = 0; index3 < cachedValue1.Split(",", System.StringSplitOptions.None).Length; index3 += 1) {
+							tmp_21_2 = tmp_21_2 + cachedValue1.Split(",", System.StringSplitOptions.None)[index3] + " = " + "excluded." + cachedValue1.Split(",", System.StringSplitOptions.None)[index3] + ",";
 						}
-						q = "UPDATE '" + "11" + "'" + " SET " + string.Join<System.String>(", ", _21_2_tmp) + " WHERE " + "N_year_N_month='" + N_year_N_month + "'";
+						q = "INSERT INTO '" + "21" + "'('N_year_N_month'," + cachedValue1 + ") VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "') ON CONFLICT(" + "N_year_N_month" + ") DO UPDATE SET " + tmp_21_2.TrimEnd(',');
 					}
 					break;
 					case "": {
