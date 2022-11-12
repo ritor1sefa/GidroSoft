@@ -250,6 +250,8 @@ namespace MaxyGames.Generated {
 						if(!((tmp_line.IndexOfAny(new char[] { '|', '=' }) > 0))) {
 							headerSkiped = false;
 						}
+					} else if((row_indexs_delimeters[0] >= line.Trim().Length)) {
+						sql_log("BD=" + line.Trim() + "==" + "Table=" + N_table + "==YM=" + N_year_N_month, "= Только название или вообще пустая строчка");
 					} else {
 						if(string.IsNullOrEmpty(Regex.Match(line.TrimStart().Substring(0, row_indexs_delimeters[0]), "^\\D*\\d+\\.(.+)", RegexOptions.None).Result("$1").Trim())) {
 							//добавляем данные в первый столбец
