@@ -232,6 +232,9 @@ namespace MaxyGames.Generated {
 				case "": {
 				}
 				break;
+				case "": {
+				}
+				break;
 				default: {
 					foreach(string loopObject4 in _rowsUnparsed) {
 						if(Regex.IsMatch(loopObject4.Trim(), "^ *\\d{1,3}\\.")) {
@@ -302,7 +305,7 @@ namespace MaxyGames.Generated {
 							tmp_name = Regex.Match(" " + line.Substring(0, (row_indexs_delimeters[0] - 1)).TrimStart(), "\\D*\\d+\\.(.+)", RegexOptions.None).Result("$1");
 							//сохранение имени бд, на случай пустой следующей строки
 							tmp_db_name = NickBuhro.Translit.Transliteration.CyrillicToLatin(tmp_name.Trim(), NickBuhro.Translit.Language.Russian).ToLower().Replace(",", "_");
-							tmp_line = line.Trim();
+							tmp_line = line;
 						}
 						sql_log("BD=" + tmp_db_name + "==" + "Table=" + N_table + "==YM=" + N_year_N_month + "==tmpline=" + tmp_line + "==DelimCount=" + row_indexs_delimeters.Count.ToString(), "");
 						_rowsParsed.Add(tmp_db_name);
@@ -513,12 +516,12 @@ namespace MaxyGames.Generated {
 					break;
 					case "14": {
 						//N14&N15
-						q = "REPLACE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_h:m=" + Regex.Replace(row1[1], " +", ":") + "','" + string.Join<System.String>("','", row1) + "')";
+						q = "REPLACE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_d" + row1[0] + "_h:m=" + Regex.Replace(row1[1], " +", ":") + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "15": {
 						//N14&N15
-						q = "REPLACE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_h:m=" + Regex.Replace(row1[1], " +", ":") + "','" + string.Join<System.String>("','", row1) + "')";
+						q = "REPLACE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_d" + row1[0] + "_h:m=" + Regex.Replace(row1[1], " +", ":") + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "16": {
