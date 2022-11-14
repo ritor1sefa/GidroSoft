@@ -22,12 +22,12 @@ namespace MaxyGames.Generated {
 		public List<string> Files = new List<string>();
 		public List<string> Tables = new List<string>();
 		public int totalNrows = 0;
+		public Dictionary<string, string> bd_names_raw = new Dictionary<string, string>();
 		public GameObject objectVariable;
 		public GameObject objectVariable1;
 		public GameObject objectVariable2;
 		public GameObject objectVariable3;
 		public GameObject objectVariable4;
-		private int index4;
 
 		private void Start() {
 			Files = new List<string>();
@@ -58,6 +58,11 @@ namespace MaxyGames.Generated {
 		public void button() {
 			XLWorkbook variable01 = new XLWorkbook();
 			IXLWorksheet variable11 = default(IXLWorksheet);
+			bd_names_raw.Clear();
+			//Список на замену названий с "русского" на Русский
+			foreach(string loopObject1 in File.ReadAllText(Application.streamingAssetsPath + "/" + "tmp.txt").Split("&", System.StringSplitOptions.RemoveEmptyEntries)) {
+				bd_names_raw.Add(loopObject1.Split(new char[] { '=' })[1], loopObject1.Split(new char[] { '=' })[0]);
+			}
 			base.StartCoroutine(xlsx_mainLoop());
 		}
 
@@ -87,11 +92,11 @@ namespace MaxyGames.Generated {
 		/// нифига не работает почему то, на большом количестве разных таблиц.
 		/// </summary>
 		public void sql_close() {
-			foreach(KeyValuePair<string, SqliteCommand> loopObject1 in sql_cmnds) {
-				loopObject1.Value.Dispose();
-			}
-			foreach(KeyValuePair<string, SqliteConnection> loopObject2 in sql_Connections) {
+			foreach(KeyValuePair<string, SqliteCommand> loopObject2 in sql_cmnds) {
 				loopObject2.Value.Dispose();
+			}
+			foreach(KeyValuePair<string, SqliteConnection> loopObject3 in sql_Connections) {
+				loopObject3.Value.Dispose();
 			}
 			SqliteConnection.ClearAllPools();
 			System.GC.Collect();
@@ -210,14 +215,15 @@ namespace MaxyGames.Generated {
 			Regex variable6 = default(Regex);
 			float cell_float = 0F;
 			int variable8 = 0;
+			string tmp_fileNameNormal = "";
 			wb = new XLWorkbook();
 			wSh = wb.Worksheets.Add(currentTable);
 			for(int index3 = 0; index3 < finalTable.Count; index3 += 1) {
 				row_int = (index3 + 1);
 				row_list = finalTable[index3];
-				for(index4 = 0; index4 < row_list.Count; index4 += 1) {
+				for(int index4 = 0; index4 < row_list.Count; index4 += 1) {
 					clmn_int = (clmn_int + 1);
-					raw_value = new Regex("[@ -]").Replace(row_list[index4].Replace("  ", "_").Replace(" ", "_"), "");
+					raw_value = row_list[index4];
 					switch(currentTable) {
 						case "0": {
 						}
@@ -232,21 +238,31 @@ namespace MaxyGames.Generated {
 						}
 						break;
 						case "4": {
-							if((clmn_int == 2)) {
-								if(Regex.IsMatch(raw_value, "y(\\d+)_m(\\d+)")) {
+							if((clmn_int == 1)) {
+								if(bd_names_raw.TryGetValue(raw_value, out tmp_fileNameNormal)) {
 									//год
-									wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)_m(\\d+)").Result("$1");
-									clmn_int = (clmn_int + 1);
-									//месяц
-									wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)_m(\\d+)").Result("$2");
+									wSh.Cell(row_int, clmn_int).Value = tmp_fileNameNormal;
 								} else {
-									Debug.Log(raw_value);
+									Debug.Log("!!!файла в списке нету?!=" + raw_value);
 								}
-							} else if(float.TryParse(raw_value, out cell_float)) {
-								wSh.Cell(row_int, clmn_int).SetValue<System.Single>(cell_float);
 							} else {
-								//название поста
-								wSh.Cell(row_int, clmn_int).Value = raw_value;
+								raw_value = new Regex("[-@]").Replace(raw_value.Replace("  ", "_").Replace(" ", "_"), "");
+								if((clmn_int == 2)) {
+									if(Regex.IsMatch(raw_value, "y(\\d+)_m(\\d+)")) {
+										//год
+										wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)_m(\\d+)").Result("$1");
+										clmn_int = (clmn_int + 1);
+										//месяц
+										wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)_m(\\d+)").Result("$2");
+									} else {
+										Debug.Log(raw_value);
+									}
+								} else if(float.TryParse(raw_value, out cell_float)) {
+									wSh.Cell(row_int, clmn_int).SetValue<System.Single>(cell_float);
+								} else {
+									//название поста
+									wSh.Cell(row_int, clmn_int).Value = raw_value;
+								}
 							}
 						}
 						break;
