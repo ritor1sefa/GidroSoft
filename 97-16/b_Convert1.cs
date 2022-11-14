@@ -25,7 +25,7 @@ namespace MaxyGames.Generated {
 		public GameObject objectVariable2;
 		public GameObject objectVariable3;
 		private List<int> delimetrs = new List<int>();
-		private string loopObject;
+		private string loopObject1;
 		private int index;
 		private int index1;
 		public GameObject objectVariable4;
@@ -52,13 +52,15 @@ namespace MaxyGames.Generated {
 			string N_table = "";
 			string N_year_N_month = "";
 			List<string> _rowUnparsed = new List<string>();
+			List<string> _rowUnparsed0 = new List<string>();
 			List<string> table = new List<string>();
 			List<List<string>> Qtable = new List<List<string>>();
 			Dictionary<string, string> months = new Dictionary<string, string>() { { "ЯНВАРЬ", "1" }, { "ФЕВРАЛЬ", "2" }, { "МАРТ", "3" }, { "АПРЕЛЬ", "4" }, { "МАЙ", "5" }, { "ИЮНЬ", "6" }, { "ИЮЛЬ", "7" }, { "АВГУСТ", "8" }, { "СЕНТЯБРЬ", "9" }, { "ОКТЯБРЬ", "10" }, { "НОЯБРЬ", "11" }, { "ДЕКАБРЬ", "12" } };
-			string N_year_table = "";
+			string N_year_N_month_FromHeader = "";
 			string tmp_tblName = "";
-			if((Files.Length > currentFile)) {
-				path = Files[currentFile];
+			currentFile = 0;
+			foreach(string loopObject in Files) {
+				path = loopObject;
 				sql_log(path, "");
 				currentFile = (currentFile + 1);
 				file_data = File.ReadAllText(path).Replace("", "").Replace("", "");
@@ -116,22 +118,22 @@ namespace MaxyGames.Generated {
 									new WaitForEndOfFrame();
 									delimetrs = _alllndexOfDelimeters(_rowUnparsed, N_table);
 									new WaitForEndOfFrame();
-									N_year_table = Regex.Match(One_table_data, "Месяц\\D*(\\d+)\\D*Год\\D*(\\d+)", RegexOptions.None).Result("$2");
+									N_year_N_month_FromHeader = Regex.Match(One_table_data, "Месяц\\D*(\\d+)\\D*Год\\D*(\\d+)", RegexOptions.None).Result("y$2_m$1");
 									if(!(N_table.Equals(tmp_tblName))) {
 										N_year_N_month = "";
 										tmp_tblName = N_table;
 									}
 									//получатель месяца-года для новых файлов 2016+
 									foreach(string tempVar in _rowUnparsed) {
-										loopObject = tempVar;
-										if(Regex.IsMatch(loopObject, "^(?!.*Год.*).+(\\S+) *(\\d{4})")) {
-											N_year_N_month = "y" + Regex.Match(loopObject, "(\\S+) *(\\d{4})", RegexOptions.None).Result("$2") + "_m" + months[Regex.Match(loopObject, "(\\S+) *(\\d{4})", RegexOptions.None).Result("$1")];
+										loopObject1 = tempVar;
+										if(Regex.IsMatch(loopObject1, "^(?!.*Год.*).+(\\S+) *(\\d{4})")) {
+											N_year_N_month = "y" + Regex.Match(loopObject1, "(\\S+) *(\\d{4})", RegexOptions.None).Result("$2") + "_m" + months[Regex.Match(loopObject1, "(\\S+) *(\\d{4})", RegexOptions.None).Result("$1")];
 										}
 										if(string.IsNullOrWhiteSpace(N_year_N_month)) {
-											N_year_N_month = "y" + N_year_table + "_m12" + "";
+											N_year_N_month = N_year_N_month_FromHeader;
 										}
 										yield return new WaitForEndOfFrame();
-										Qtable = parseRow(delimetrs, _rowUnparsed, N_table, N_year_N_month);
+										Qtable = parseRow(delimetrs, new List<string>(), N_table, N_year_N_month, loopObject1);
 										yield return new WaitForEndOfFrame();
 										sql_insertTables(Qtable, N_table, N_year_N_month);
 									}
@@ -172,9 +174,9 @@ namespace MaxyGames.Generated {
 						One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None);
 					} else {
 						//пилим 12 таблицу пополам
-						foreach(string loopObject1 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
-							if(!(Regex.IsMatch(loopObject1.Trim(), "^ца\\D*(\\d+)\\."))) {
-								tmp_row_raw = loopObject1;
+						foreach(string loopObject2 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
+							if(!(Regex.IsMatch(loopObject2.Trim(), "^ца\\D*(\\d+)\\."))) {
+								tmp_row_raw = loopObject2;
 								if((tmp_row_raw.Length > tmp_row_maxLenght)) {
 									//Тут всегда самая большая длина строки (из шапки)
 									tmp_row_maxLenght = tmp_row_raw.Length;
@@ -192,10 +194,10 @@ namespace MaxyGames.Generated {
 								}
 							}
 						}
-						foreach(string loopObject2 in _2thPart) {
-							if(Regex.IsMatch(loopObject2.TrimStart(), "^\\d{1,3}\\.")) {
+						foreach(string loopObject3 in _2thPart) {
+							if(Regex.IsMatch(loopObject3.TrimStart(), "^\\d{1,3}\\.")) {
 								//второго столбца добавляем только строки
-								_rowsUnparsed.Add(loopObject2);
+								_rowsUnparsed.Add(loopObject3);
 							}
 						}
 					}
@@ -204,9 +206,9 @@ namespace MaxyGames.Generated {
 				default: {
 					tmp_ifNextMonth = "";
 					//непилимые таблицы
-					foreach(string loopObject3 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
-						tmp_row_raw = loopObject3;
-						if(loopObject3.Trim().ToLower().Contains("Переход".ToLower())) {
+					foreach(string loopObject4 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
+						tmp_row_raw = loopObject4;
+						if(loopObject4.Trim().ToLower().Contains("Переход".ToLower())) {
 							//если есть в строке "Переход на следующий месяц"
 							tmp_ifNextMonth = "";
 						} else {
@@ -228,11 +230,11 @@ namespace MaxyGames.Generated {
 			HashSet<int> tmp_hash_ints = new HashSet<int>();
 			switch(N_table) {
 				case "12": {
-					foreach(string loopObject4 in _rowsUnparsed) {
-						if(Regex.IsMatch(loopObject4.Trim(), "^ *\\d{1,3}\\.")) {
+					foreach(string loopObject5 in _rowsUnparsed) {
+						if(Regex.IsMatch(loopObject5.Trim(), "^ *\\d{1,3}\\.")) {
 							return Enumerable.ToList<System.Int32>(tmp_hash_ints);
 						} else {
-							row = loopObject4;
+							row = loopObject5;
 							//Бегает по строке - ищет приключений
 							for(index = row.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index > -1; index = row.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index + 1))) {
 								tmp_hash_ints.Add((index + 1));
@@ -248,11 +250,11 @@ namespace MaxyGames.Generated {
 				}
 				break;
 				default: {
-					foreach(string loopObject5 in _rowsUnparsed) {
-						if(Regex.IsMatch(loopObject5.Trim(), "^ *\\d{1,3}\\.")) {
+					foreach(string loopObject6 in _rowsUnparsed) {
+						if(Regex.IsMatch(loopObject6.Trim(), "^ *\\d{1,3}\\.")) {
 							return Enumerable.ToList<System.Int32>(tmp_hash_ints);
 						} else {
-							row = loopObject5;
+							row = loopObject6;
 							//Бегает по строке - ищет приключений
 							for(index1 = row.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index1 > -1; index1 = row.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index1 + 1))) {
 								tmp_hash_ints.Add(index1);
@@ -263,8 +265,8 @@ namespace MaxyGames.Generated {
 				}
 				break;
 			}
-			foreach(int loopObject6 in tmp_hash_ints) {
-				Debug.Log(loopObject6);
+			foreach(int loopObject7 in tmp_hash_ints) {
+				Debug.Log(loopObject7);
 			}
 			return Enumerable.ToList<System.Int32>(tmp_hash_ints);
 		}
@@ -272,7 +274,7 @@ namespace MaxyGames.Generated {
 		/// <summary>
 		/// Пролучаем массив строк-ячеек из таблицы, чистые и обработанные
 		/// </summary>
-		public List<List<string>> parseRow(List<int> row_indexs_delimeters, List<string> _rowsUnparsed, string N_table, string N_year_N_month) {
+		public List<List<string>> parseRow(List<int> row_indexs_delimeters, List<string> _rowsUnparsed, string N_table, string N_year_N_month, string unParsedLine) {
 			string tokenToSplitBy = "|";
 			int insCount = -1;
 			string line = "";
@@ -290,68 +292,65 @@ namespace MaxyGames.Generated {
 			_tableParsed = new List<List<string>>();
 			//Для таблиц с несколькими строчками. 14+
 			headerSkiped = false;
-			//построчная обработка
-			foreach(string loopObject7 in _rowsUnparsed) {
-				line = loopObject7;
-				if(Regex.IsMatch(line, "^ +═")) {
-					//Сдвиг строки для кривой таблицы N12, второй её половины
-					tmp_startLine = (line.Length - line.TrimStart().Length);
-				}
-				if((Regex.IsMatch(line.Trim(), "^\\d{1,3}\\.") || headerSkiped)) {
-					headerSkiped = true;
-					_rowsParsed = new List<string>();
-					//Проверка на конец таблицы
-					if(((row_indexs_delimeters[0] > line.Length) || string.IsNullOrEmpty(line.Substring(row_indexs_delimeters[0], (line.Length - row_indexs_delimeters[0])).Trim()))) {
-						//пустота под новой шапкой?
-						if(!((tmp_line.IndexOfAny(new char[] { '|', '=' }) > 0))) {
-							headerSkiped = false;
-						}
-					} else if((row_indexs_delimeters[0] >= line.Trim().Length)) {
-						sql_log("BD=" + line.Trim() + "==" + "Table=" + N_table + "==YM=" + N_year_N_month, "= Только название или вообще пустая строчка");
+			line = unParsedLine;
+			if(Regex.IsMatch(line, "^ +═")) {
+				//Сдвиг строки для кривой таблицы N12, второй её половины
+				tmp_startLine = (line.Length - line.TrimStart().Length);
+			}
+			if((Regex.IsMatch(line.Trim(), "^\\d{1,3}\\.") || headerSkiped)) {
+				headerSkiped = true;
+				_rowsParsed = new List<string>();
+				//Проверка на конец таблицы
+				if(((row_indexs_delimeters[0] > line.Length) || string.IsNullOrEmpty(line.Substring(row_indexs_delimeters[0], (line.Length - row_indexs_delimeters[0])).Trim()))) {
+					//пустота под новой шапкой?
+					if(!((tmp_line.IndexOfAny(new char[] { '|', '=' }) > 0))) {
+						headerSkiped = false;
+					}
+				} else if((row_indexs_delimeters[0] >= line.Trim().Length)) {
+					sql_log("BD=" + line.Trim() + "==" + "Table=" + N_table + "==YM=" + N_year_N_month, "= Только название или вообще пустая строчка");
+				} else {
+					if(string.IsNullOrEmpty(line.Substring(0, (row_indexs_delimeters[0] - 1)).TrimStart())) {
+						//добавляем данные в первый столбец
+						tmp_line = tmp_db_name + line.Substring(tmp_db_name.Length, (line.Length - tmp_db_name.Length));
 					} else {
-						if(string.IsNullOrEmpty(line.Substring(0, (row_indexs_delimeters[0] - 1)).TrimStart())) {
-							//добавляем данные в первый столбец
-							tmp_line = tmp_db_name + line.Substring(tmp_db_name.Length, (line.Length - tmp_db_name.Length));
-						} else {
-							//если не "Переход на следующий месяц", т.е. обычный
-							tmp_name = Regex.Match(" " + line.Substring(0, (row_indexs_delimeters[0] - 1)).TrimStart(), "\\D*\\d+\\.(.+)", RegexOptions.None).Result("$1");
-							//сохранение имени бд, на случай пустой следующей строки
-							tmp_db_name = tmp_name.Trim().Replace(",", "_");
-							tmp_line = line;
-						}
-						_rowsParsed.Add(tmp_db_name);
-						for(int index2 = 0; index2 < (row_indexs_delimeters.Count - 1); index2 += 1) {
-							from = (row_indexs_delimeters[index2] + tmp_startLine);
-							length = (row_indexs_delimeters[(index2 + 1)] - from);
-							//Проверка на неполную строчку. заполнение @
-							if((tmp_line.Length > from)) {
-								if((tmp_line.Length >= (from + length))) {
-									//Если совсем всё в порядке и вся ячейка что то имеет
-									_rowsParsed.Add(tmp_line.Substring(from, length).Trim());
-								} else {
-									//Если нехватает символов в ячейке, но что то есть
-									_rowsParsed.Add(tmp_line.Substring(from, (tmp_line.Length - from)).Trim());
-								}
-							} else {
-								//если совсем ничего нету
-								_rowsParsed.Add("@");
-							}
-						}
+						//если не "Переход на следующий месяц", т.е. обычный
+						tmp_name = Regex.Match(" " + line.Substring(0, (row_indexs_delimeters[0] - 1)).TrimStart(), "\\D*\\d+\\.(.+)", RegexOptions.None).Result("$1");
+						//сохранение имени бд, на случай пустой следующей строки
+						tmp_db_name = tmp_name.Trim().Replace(",", "_");
+						tmp_line = line;
+					}
+					_rowsParsed.Add(tmp_db_name);
+					for(int index2 = 0; index2 < (row_indexs_delimeters.Count - 1); index2 += 1) {
+						from = (row_indexs_delimeters[index2] + tmp_startLine);
+						length = (row_indexs_delimeters[(index2 + 1)] - from);
 						//Проверка на неполную строчку. заполнение @
-						if((tmp_line.Length > row_indexs_delimeters[row_indexs_delimeters.Count - 1])) {
-							if((tmp_line.Length >= (row_indexs_delimeters[row_indexs_delimeters.Count - 1] + (tmp_line.Length - row_indexs_delimeters[row_indexs_delimeters.Count - 1])))) {
-								//last. если все символы на месте.
-								_rowsParsed.Add(tmp_line.Substring(row_indexs_delimeters[row_indexs_delimeters.Count - 1], (tmp_line.Length - row_indexs_delimeters[row_indexs_delimeters.Count - 1])).Trim());
+						if((tmp_line.Length > from)) {
+							if((tmp_line.Length >= (from + length))) {
+								//Если совсем всё в порядке и вся ячейка что то имеет
+								_rowsParsed.Add(tmp_line.Substring(from, length).Trim());
 							} else {
-								//last. если нехватает некоторых символов
-								_rowsParsed.Add(tmp_line.Substring(row_indexs_delimeters[row_indexs_delimeters.Count - 1], (tmp_line.Length - row_indexs_delimeters[row_indexs_delimeters.Count - 1])).Trim());
+								//Если нехватает символов в ячейке, но что то есть
+								_rowsParsed.Add(tmp_line.Substring(from, (tmp_line.Length - from)).Trim());
 							}
 						} else {
-							//last. если ячейка совсем пустая
+							//если совсем ничего нету
 							_rowsParsed.Add("@");
 						}
-						_tableParsed.Add(_rowsParsed);
 					}
+					//Проверка на неполную строчку. заполнение @
+					if((tmp_line.Length > row_indexs_delimeters[row_indexs_delimeters.Count - 1])) {
+						if((tmp_line.Length >= (row_indexs_delimeters[row_indexs_delimeters.Count - 1] + (tmp_line.Length - row_indexs_delimeters[row_indexs_delimeters.Count - 1])))) {
+							//last. если все символы на месте.
+							_rowsParsed.Add(tmp_line.Substring(row_indexs_delimeters[row_indexs_delimeters.Count - 1], (tmp_line.Length - row_indexs_delimeters[row_indexs_delimeters.Count - 1])).Trim());
+						} else {
+							//last. если нехватает некоторых символов
+							_rowsParsed.Add(tmp_line.Substring(row_indexs_delimeters[row_indexs_delimeters.Count - 1], (tmp_line.Length - row_indexs_delimeters[row_indexs_delimeters.Count - 1])).Trim());
+						}
+					} else {
+						//last. если ячейка совсем пустая
+						_rowsParsed.Add("@");
+					}
+					_tableParsed.Add(_rowsParsed);
 				}
 			}
 			return _tableParsed;
