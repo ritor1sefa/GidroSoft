@@ -23,6 +23,16 @@ namespace MaxyGames.Generated {
 		public List<string> Tables = new List<string>();
 		public int totalNrows = 0;
 		public Dictionary<string, string> bd_names_raw = new Dictionary<string, string>();
+		public XLWorkbook wb = new XLWorkbook();
+		public IXLWorksheet wSh;
+		public int row_int = 0;
+		public List<string> row_list = new List<string>();
+		public int clmn_int = 0;
+		public string raw_value = "";
+		public Regex variable6;
+		public float cell_float = 0F;
+		public int variable8 = 0;
+		public string tmp_fileNameNormal = "";
 		public GameObject objectVariable;
 		public GameObject objectVariable1;
 		public GameObject objectVariable2;
@@ -194,7 +204,7 @@ namespace MaxyGames.Generated {
 					currentFile = Files[index2];
 					//склеиваем из файлов в один массив все строки
 					finalTable.AddRange(sql_getTable(currentFile, currentTable));
-					System.Math.DivRem(row_int, 100, out variable1);
+					System.Math.DivRem(currentFileN, 100, out variable1);
 					if(variable1.Equals(0)) {
 						yield return new WaitForEndOfFrame();
 					}
@@ -206,16 +216,6 @@ namespace MaxyGames.Generated {
 		}
 
 		public System.Collections.IEnumerator xlsx_save(List<List<string>> finalTable) {
-			XLWorkbook wb = new XLWorkbook();
-			IXLWorksheet wSh = default(IXLWorksheet);
-			int row_int = 0;
-			List<string> row_list = new List<string>();
-			int clmn_int = 0;
-			string raw_value = "";
-			Regex variable6 = default(Regex);
-			float cell_float = 0F;
-			int variable8 = 0;
-			string tmp_fileNameNormal = "";
 			wb = new XLWorkbook();
 			wSh = wb.Worksheets.Add(currentTable);
 			for(int index3 = 0; index3 < finalTable.Count; index3 += 1) {
