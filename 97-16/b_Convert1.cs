@@ -74,7 +74,7 @@ namespace MaxyGames.Generated {
 						//Пропускаем "таблицы" где много точек = меню в начале файла
 						if((!(One_table_data.Contains(".....")) && One_table_data.StartsWith("ца"))) {
 							//Get Number of table
-							N_table = Regex.Match(One_table_data, "ца\\D*(\\d+).*\\.", RegexOptions.None).Result("$1");
+							N_table = Regex.Match(One_table_data, "ца\\D*(\\w+)", RegexOptions.None).Result("$1");
 							switch(N_table) {
 								case "11": {
 									//Get subNumber of table N11&N21
@@ -111,6 +111,12 @@ namespace MaxyGames.Generated {
 								}
 								break;
 								case "4a": {
+								}
+								break;
+								case "7a": {
+								}
+								break;
+								case "": {
 								}
 								break;
 								default: {
@@ -561,7 +567,7 @@ namespace MaxyGames.Generated {
 						q = "INSERT INTO '" + "21" + "'('N_year_N_month'," + cachedValue + ") VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "') ON CONFLICT(" + "N_year_N_month" + ") DO UPDATE SET " + tmp_21_2.TrimEnd(',');
 					}
 					break;
-					case "": {
+					case "7a": {
 					}
 					break;
 					default: {

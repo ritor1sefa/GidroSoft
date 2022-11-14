@@ -204,7 +204,7 @@ namespace MaxyGames.Generated {
 					currentFile = Files[index2];
 					//склеиваем из файлов в один массив все строки
 					finalTable.AddRange(sql_getTable(currentFile, currentTable));
-					System.Math.DivRem(currentFileN, 100, out variable1);
+					System.Math.DivRem(index2, 10, out variable1);
 					if(variable1.Equals(0)) {
 						yield return new WaitForEndOfFrame();
 					}
