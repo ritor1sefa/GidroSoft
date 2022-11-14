@@ -304,10 +304,10 @@ namespace MaxyGames.Generated {
 							//если не "Переход на следующий месяц", т.е. обычный
 							tmp_name = Regex.Match(" " + line.Substring(0, (row_indexs_delimeters[0] - 1)).TrimStart(), "\\D*\\d+\\.(.+)", RegexOptions.None).Result("$1");
 							//сохранение имени бд, на случай пустой следующей строки
-							tmp_db_name = NickBuhro.Translit.Transliteration.CyrillicToLatin(tmp_name.Trim(), NickBuhro.Translit.Language.Russian).ToLower().Replace(",", "_");
+							tmp_db_name = tmp_name.Trim().Replace(",", "_");
 							tmp_line = line;
 						}
-						sql_log("BD=" + tmp_db_name + "==" + "Table=" + N_table + "==YM=" + N_year_N_month + "==tmpline=" + tmp_line + "==DelimCount=" + row_indexs_delimeters.Count.ToString(), "");
+						sql_log("BD=" + tmp_db_name + "==" + "Table=" + N_table + "==YM=" + N_year_N_month + "===" + "" + "" + "", "");
 						_rowsParsed.Add(tmp_db_name);
 						for(int index2 = 0; index2 < (row_indexs_delimeters.Count - 1); index2 += 1) {
 							from = (row_indexs_delimeters[index2] + tmp_startLine);
@@ -338,7 +338,6 @@ namespace MaxyGames.Generated {
 						} else {
 							//last. если ячейка совсем пустая
 							_rowsParsed.Add("@");
-							sql_log(N_table + "=" + line + "=" + "Строка не полная. в бд вместо недостающих ячеек внесена собака", "");
 						}
 						_tableParsed.Add(_rowsParsed);
 					}
