@@ -191,7 +191,7 @@ namespace MaxyGames.Generated {
 			int variable1 = 0;
 			//Таблицы старт
 			currentTable = "";
-			for(int index1 = 0; index1 < 1; index1 += 1) {
+			for(int index1 = 0; index1 < Tables.Count; index1 += 1) {
 				currentTable = Tables[index1];
 				Debug.Log(currentTable);
 				yield return new WaitForSeconds(0.05F);
@@ -224,102 +224,31 @@ namespace MaxyGames.Generated {
 				for(int index4 = 0; index4 < row_list.Count; index4 += 1) {
 					clmn_int = (clmn_int + 1);
 					raw_value = row_list[index4];
-					switch(currentTable) {
-						case "0": {
+					if((clmn_int == 1)) {
+						if(bd_names_raw.TryGetValue(raw_value, out tmp_fileNameNormal)) {
+							//год
+							wSh.Cell(row_int, clmn_int).Value = tmp_fileNameNormal;
+						} else {
+							Debug.Log("!!!файла в списке нету?!=" + raw_value);
 						}
-						break;
-						case "1": {
-						}
-						break;
-						case "2": {
-						}
-						break;
-						case "3": {
-						}
-						break;
-						case "4": {
-							if((clmn_int == 1)) {
-								if(bd_names_raw.TryGetValue(raw_value, out tmp_fileNameNormal)) {
-									//год
-									wSh.Cell(row_int, clmn_int).Value = tmp_fileNameNormal;
-								} else {
-									Debug.Log("!!!файла в списке нету?!=" + raw_value);
-								}
+					} else {
+						raw_value = new Regex("[-@]").Replace(raw_value.Replace("  ", "_").Replace(" ", "_"), "");
+						if((clmn_int == 2)) {
+							if(Regex.IsMatch(raw_value, "y(\\d+)_m(\\d+)")) {
+								//год
+								wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)_m(\\d+)").Result("$1");
+								clmn_int = (clmn_int + 1);
+								//месяц
+								wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)_m(\\d+)").Result("$2");
 							} else {
-								raw_value = new Regex("[-@]").Replace(raw_value.Replace("  ", "_").Replace(" ", "_"), "");
-								if((clmn_int == 2)) {
-									if(Regex.IsMatch(raw_value, "y(\\d+)_m(\\d+)")) {
-										//год
-										wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)_m(\\d+)").Result("$1");
-										clmn_int = (clmn_int + 1);
-										//месяц
-										wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)_m(\\d+)").Result("$2");
-									} else {
-										Debug.Log(raw_value);
-									}
-								} else if(float.TryParse(raw_value, out cell_float)) {
-									wSh.Cell(row_int, clmn_int).SetValue<System.Single>(cell_float);
-								} else {
-									//название поста
-									wSh.Cell(row_int, clmn_int).Value = raw_value;
-								}
+								Debug.Log(raw_value);
 							}
+						} else if(float.TryParse(raw_value, out cell_float)) {
+							wSh.Cell(row_int, clmn_int).SetValue<System.Single>(cell_float);
+						} else {
+							//название поста
+							wSh.Cell(row_int, clmn_int).Value = raw_value;
 						}
-						break;
-						case "5": {
-						}
-						break;
-						case "6": {
-						}
-						break;
-						case "7": {
-						}
-						break;
-						case "8": {
-						}
-						break;
-						case "9": {
-						}
-						break;
-						case "10": {
-						}
-						break;
-						case "11": {
-						}
-						break;
-						case "12": {
-						}
-						break;
-						case "13": {
-						}
-						break;
-						case "14": {
-						}
-						break;
-						case "15": {
-						}
-						break;
-						case "16": {
-						}
-						break;
-						case "17": {
-						}
-						break;
-						case "18": {
-						}
-						break;
-						case "19": {
-						}
-						break;
-						case "20": {
-						}
-						break;
-						case "21": {
-						}
-						break;
-						case "22": {
-						}
-						break;
 					}
 				}
 				clmn_int = 0;
