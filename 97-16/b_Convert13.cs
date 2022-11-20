@@ -24,14 +24,14 @@ namespace MaxyGames.Generated {
 		public GameObject objectVariable3;
 		private int index4;
 		private int index7;
-		private int index11;
-		private int index15;
+		private int index12;
+		private int index17;
 		private string row_bd_name3 = "";
 		private string sql_bd_name3 = "";
-		private int index18;
+		private int index20;
 		private string row_bd_name4 = "";
 		private string sql_bd_name4 = "";
-		private int index21;
+		private int index23;
 		private List<int> delimetrs6 = new List<int>();
 
 		private void Update() {
@@ -409,7 +409,7 @@ namespace MaxyGames.Generated {
 		}
 
 		public void sql_log(string parameter, string parameter2) {
-			sql_insertQ("_log", "INSERT INTO log VALUES('" + parameter + parameter2 + "')");
+			sql_insertQ("_log", "INSERT INTO log VALUES('" + parameter + "=>" + parameter2.Replace("'", "_") + "" + "')");
 		}
 
 		public void bd_names() {
@@ -518,10 +518,16 @@ namespace MaxyGames.Generated {
 				loopObject7.RemoveAt(0);
 				sql_q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", sql_row) + "')";
 				if(sql_insertQ(sql_bd_name, sql_q).Equals(0)) {
-					Debug.Log("В бд:===" + sql_bd_name + " ===уже есть эта строчка===" + sql_q);
-					new _utillz()._2log("В бд:===" + sql_bd_name + " ===уже есть эта строчка===" + sql_q, false);
+					Debug.Log("бд:" + sql_bd_name + "==" + "Ntable:" + N_table + "===Nyear:" + N_year_N_month);
+					//дописываем в ключ о том что это дубликат
+					sql_q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", sql_row) + "')";
+					if(sql_insertQ(sql_bd_name, sql_q).Equals(0)) {
+						//еслипрямь и дубликата дубликат есть, жжесть
+						Debug.Log("В бд:===" + sql_bd_name + " ===уже есть эта строчка===" + sql_q);
+					}
 				}
 			}
+			yield return new WaitForEndOfFrame();
 		}
 
 		/// <summary>
@@ -637,10 +643,29 @@ namespace MaxyGames.Generated {
 					break;
 				}
 				if(sql_insertQ(sql_bd_name1, sql_q1).Equals(0)) {
-					Debug.Log("В бд:===" + sql_bd_name1 + " ===уже есть эта строчка===" + sql_q1);
-					new _utillz()._2log("В бд:===" + sql_bd_name1 + " ===уже есть эта строчка===" + sql_q1, false);
+					Debug.Log("бд:" + sql_bd_name1 + "=N11==" + N_year_N_month1 + "_double" + "===Npart:" + N_part);
+					//дописываем в ключ о том что это дубликат
+					switch(N_part) {
+						case "1": {
+							sql_q1 = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЛ','ДЖ','МР','ЛД','ЖО','С','СЛ','ЗС','КС','КЛ','ТО','СМ','СЛМ','ТОМ','ГД','ИЛ','Р','И','ГЛ','ИЗМ','ГЛЦ','ДМ','Т','ТП')" + " VALUES ('" + N_year_N_month1 + "_double','" + string.Join<System.String>("','", sql_row1) + "')";
+						}
+						break;
+						case "2": {
+							//N11_2
+							sql_N2 = new List<string>();
+							for(int index10 = 0; index10 < "ТЛ,ТЛП,ТЗ,ТЛЗ,ТОС,ТЗО,ТТ,ТТО,МГС,П,МО,МН,ММ,МГ,ПП,ПБ,ПЫЛ,Г,ПС,Ш,В,СЧ,МЖ".Split(",", System.StringSplitOptions.None).Length; index10 += 1) {
+								sql_N2.Add(("ТЛ,ТЛП,ТЗ,ТЛЗ,ТОС,ТЗО,ТТ,ТТО,МГС,П,МО,МН,ММ,МГ,ПП,ПБ,ПЫЛ,Г,ПС,Ш,В,СЧ,МЖ".Split(",", System.StringSplitOptions.None).GetValue(index10) as string) + " = " + "'" + sql_row1[index10] + "'");
+							}
+							sql_q1 = "UPDATE '" + "11" + "'" + " SET " + string.Join<System.String>(", ", sql_N2) + " WHERE " + "N_year_N_month='" + N_year_N_month1 + "_double'";
+						}
+						break;
+					}
+					if(sql_insertQ(sql_bd_name1, sql_q1).Equals(0)) {
+						Debug.Log("В бд:===" + sql_bd_name1 + " ===уже есть эта строчка===" + sql_q1);
+					}
 				}
 			}
+			yield return new WaitForEndOfFrame();
 		}
 
 		/// <summary>
@@ -713,11 +738,11 @@ namespace MaxyGames.Generated {
 				if((rows_unparsed2.Count < 10)) {
 					delim_rowCount2 = rows_unparsed2.Count;
 				}
-				for(int index10 = 0; index10 < delim_rowCount2; index10 += 1) {
-					delim_row2 = rows_unparsed2[index10];
+				for(int index11 = 0; index11 < delim_rowCount2; index11 += 1) {
+					delim_row2 = rows_unparsed2[index11];
 					//Бегает по строке - ищет приключений
-					for(index11 = delim_row2.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index11 > -1; index11 = delim_row2.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index11 + 1))) {
-						delim_hash_ints2.Add((index11 + 1));
+					for(index12 = delim_row2.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index12 > -1; index12 = delim_row2.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index12 + 1))) {
+						delim_hash_ints2.Add((index12 + 1));
 					}
 				}
 				delimetrs2 = Enumerable.ToList<System.Int32>(delim_hash_ints2);
@@ -737,9 +762,9 @@ namespace MaxyGames.Generated {
 							break;
 						}
 						//основное тело распарса строки
-						for(int index12 = 0; index12 < (delimetrs2.Count - 1); index12 += 1) {
-							row_from2 = delimetrs2[index12];
-							row_length2 = (delimetrs2[(index12 + 1)] - row_from2);
+						for(int index13 = 0; index13 < (delimetrs2.Count - 1); index13 += 1) {
+							row_from2 = delimetrs2[index13];
+							row_length2 = (delimetrs2[(index13 + 1)] - row_from2);
 							//Проверка на неполную строчку. заполнение @
 							if((row_line2.Length > row_from2)) {
 								if((row_line2.Length >= (row_from2 + row_length2))) {
@@ -785,15 +810,23 @@ namespace MaxyGames.Generated {
 						sql_clmns = "'ДЖ','С','СМ','ТТ','ИЗМ','ГЛ','ММ','ГД','Г'";
 					}
 					//N21_3
-					for(int index13 = 0; index13 < sql_clmns.Split(",", System.StringSplitOptions.None).Length; index13 += 1) {
-						sql_tmp = sql_tmp + sql_clmns.Split(",", System.StringSplitOptions.None)[index13] + " = " + "excluded." + sql_clmns.Split(",", System.StringSplitOptions.None)[index13] + ",";
+					for(int index14 = 0; index14 < sql_clmns.Split(",", System.StringSplitOptions.None).Length; index14 += 1) {
+						sql_tmp = sql_tmp + sql_clmns.Split(",", System.StringSplitOptions.None)[index14] + " = " + "excluded." + sql_clmns.Split(",", System.StringSplitOptions.None)[index14] + ",";
 					}
 					sql_q2 = "INSERT OR IGNORE INTO '" + "11" + "'('N_year_N_month'," + sql_clmns + ") VALUES ('" + N_year_N_month2 + "','" + string.Join<System.String>("','", sql_row2) + "') ";
 					if(sql_insertQ(sql_bd_name2, sql_q2).Equals(0)) {
-						Debug.Log("В бд:===" + sql_bd_name2 + " ===уже есть эта строчка===" + sql_q2);
-						new _utillz()._2log("В бд:===" + sql_bd_name2 + " ===уже есть эта строчка===" + sql_q2, false);
+						Debug.Log("бд:" + sql_bd_name2 + "==" + "Ntable:11" + "" + "===Nyear:" + N_year_N_month2);
+						//N21_3
+						for(int index15 = 0; index15 < sql_clmns.Split(",", System.StringSplitOptions.None).Length; index15 += 1) {
+							sql_tmp = sql_tmp + sql_clmns.Split(",", System.StringSplitOptions.None)[index15] + " = " + "excluded." + sql_clmns.Split(",", System.StringSplitOptions.None)[index15] + ",";
+						}
+						sql_q2 = "INSERT OR IGNORE INTO '" + "11" + "'('N_year_N_month'," + sql_clmns + ") VALUES ('" + N_year_N_month2 + "_double','" + string.Join<System.String>("','", sql_row2) + "') ";
+						if(sql_insertQ(sql_bd_name2, sql_q2).Equals(0)) {
+							Debug.Log("В бд:===" + sql_bd_name2 + " ===уже есть эта строчка===" + sql_q2);
+						}
 					}
 				}
+				yield return new WaitForEndOfFrame();
 			} else {
 				Debug.Log("Год не распарсился :\\");
 			}
@@ -827,11 +860,11 @@ namespace MaxyGames.Generated {
 			if((rows_unparsed3.Count < 10)) {
 				delim_rowCount3 = rows_unparsed3.Count;
 			}
-			for(int index14 = 0; index14 < delim_rowCount3; index14 += 1) {
-				delim_row3 = rows_unparsed3[index14];
+			for(int index16 = 0; index16 < delim_rowCount3; index16 += 1) {
+				delim_row3 = rows_unparsed3[index16];
 				//Бегает по строке - ищет приключений
-				for(index15 = delim_row3.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index15 > -1; index15 = delim_row3.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index15 + 1))) {
-					delim_hash_ints3.Add((index15 + 1));
+				for(index17 = delim_row3.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index17 > -1; index17 = delim_row3.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index17 + 1))) {
+					delim_hash_ints3.Add((index17 + 1));
 				}
 			}
 			delimetrs3 = Enumerable.ToList<System.Int32>(delim_hash_ints3);
@@ -853,16 +886,16 @@ namespace MaxyGames.Generated {
 						break;
 					}
 				} else //если в строке что то есть, но не название
-				if((((((row_line3.Length > delimetrs3[0]) && !(string.IsNullOrWhiteSpace(row_bd_name3))) && !(Regex.IsMatch(row_line3, "ца\\D*(\\w+)"))) && Regex.IsMatch(row_line3, "^[^║═]*$")) && !(Regex.IsMatch(row_line3, "Год\\D*(\\d+)")))) {
+				if((((((row_line3.Trim().Length > delimetrs3[0]) && !(string.IsNullOrWhiteSpace(row_bd_name3))) && !(Regex.IsMatch(row_line3, "ца\\D*(\\w+)"))) && Regex.IsMatch(row_line3, "^[^║═=|]*$")) && !(Regex.IsMatch(row_line3, "Год\\D*(\\d+)")))) {
 					//имя бд файла, уже нормализованное
 					row_parsed3.Add(row_bd_name3);
 				}
 				//Если есть в массиве название
 				if((row_parsed3.Count > 0)) {
 					//основное тело распарса строки
-					for(int index16 = 0; index16 < (delimetrs3.Count - 1); index16 += 1) {
-						row_from3 = delimetrs3[index16];
-						row_length3 = (delimetrs3[(index16 + 1)] - row_from3);
+					for(int index18 = 0; index18 < (delimetrs3.Count - 1); index18 += 1) {
+						row_from3 = delimetrs3[index18];
+						row_length3 = (delimetrs3[(index18 + 1)] - row_from3);
 						//Проверка на неполную строчку. заполнение @
 						if((row_line3.Length > row_from3)) {
 							if((row_line3.Length >= (row_from3 + row_length3))) {
@@ -902,10 +935,14 @@ namespace MaxyGames.Generated {
 				loopObject18.RemoveAt(0);
 				sql_q3 = "INSERT OR IGNORE INTO '" + "14" + "' " + "VALUES ('" + N_year_N_month3 + "_hash:" + string.Join<System.String>("_", sql_row3) + "','" + string.Join<System.String>("','", sql_row3) + "')";
 				if(sql_insertQ(sql_bd_name3, sql_q3).Equals(0)) {
-					Debug.Log("В бд:===" + sql_bd_name3 + " ===уже есть эта строчка===" + sql_q3);
-					new _utillz()._2log("В бд:===" + sql_bd_name3 + " ===уже есть эта строчка===" + sql_q3, false);
+					Debug.Log("бд:" + sql_bd_name3 + "==" + "Ntable:" + "14" + "===Nyear:" + N_year_N_month3);
+					sql_q3 = "INSERT OR IGNORE INTO '" + "14" + "' " + "VALUES ('" + N_year_N_month3 + "_double_hash:" + string.Join<System.String>("_", sql_row3) + "','" + string.Join<System.String>("','", sql_row3) + "')";
+					if(sql_insertQ(sql_bd_name3, sql_q3).Equals(0)) {
+						Debug.Log("В бд:===" + sql_bd_name3 + " ===уже есть эта строчка===" + sql_q3);
+					}
 				}
 			}
+			yield return new WaitForEndOfFrame();
 		}
 
 		/// <summary>
@@ -939,11 +976,11 @@ namespace MaxyGames.Generated {
 			if((rows_unparsed4.Count < 10)) {
 				delim_rowCount4 = rows_unparsed4.Count;
 			}
-			for(int index17 = 0; index17 < delim_rowCount4; index17 += 1) {
-				delim_row4 = rows_unparsed4[index17];
+			for(int index19 = 0; index19 < delim_rowCount4; index19 += 1) {
+				delim_row4 = rows_unparsed4[index19];
 				//Бегает по строке - ищет приключений
-				for(index18 = delim_row4.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index18 > -1; index18 = delim_row4.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index18 + 1))) {
-					delim_hash_ints4.Add((index18 + 1));
+				for(index20 = delim_row4.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index20 > -1; index20 = delim_row4.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index20 + 1))) {
+					delim_hash_ints4.Add((index20 + 1));
 				}
 			}
 			delimetrs4 = Enumerable.ToList<System.Int32>(delim_hash_ints4);
@@ -965,16 +1002,16 @@ namespace MaxyGames.Generated {
 						break;
 					}
 				} else //если в строке что то есть, но не название
-				if((((((row_line4.Length > delimetrs4[0]) && !(string.IsNullOrWhiteSpace(row_bd_name4))) && !(Regex.IsMatch(row_line4, "ца\\D*(\\w+)"))) && Regex.IsMatch(row_line4, "^[^║═]*$")) && !(Regex.IsMatch(row_line4, "Год\\D*(\\d+)")))) {
+				if((((((row_line4.Trim().Length > delimetrs4[0]) && !(string.IsNullOrWhiteSpace(row_bd_name4))) && !(Regex.IsMatch(row_line4, "ца\\D*(\\w+)"))) && Regex.IsMatch(row_line4, "^[^║═=|]*$")) && !(Regex.IsMatch(row_line4, "Год\\D*(\\d+)")))) {
 					//имя бд файла, уже нормализованное
 					row_parsed4.Add(row_bd_name4);
 				}
 				//Если есть в массиве название
 				if((row_parsed4.Count > 0)) {
 					//основное тело распарса строки
-					for(int index19 = 0; index19 < (delimetrs4.Count - 1); index19 += 1) {
-						row_from4 = delimetrs4[index19];
-						row_length4 = (delimetrs4[(index19 + 1)] - row_from4);
+					for(int index21 = 0; index21 < (delimetrs4.Count - 1); index21 += 1) {
+						row_from4 = delimetrs4[index21];
+						row_length4 = (delimetrs4[(index21 + 1)] - row_from4);
 						//Проверка на неполную строчку. заполнение @
 						if((row_line4.Length > row_from4)) {
 							if((row_line4.Length >= (row_from4 + row_length4))) {
@@ -1024,10 +1061,24 @@ namespace MaxyGames.Generated {
 					break;
 				}
 				if(sql_insertQ(sql_bd_name4, sql_q4).Equals(0)) {
-					Debug.Log("В бд:===" + sql_bd_name4 + " ===уже есть эта строчка===" + sql_q4);
-					new _utillz()._2log("В бд:===" + sql_bd_name4 + " ===уже есть эта строчка===" + sql_q4, false);
+					Debug.Log("бд:" + sql_bd_name4 + "==" + "Ntable:" + "16" + "===Nyear:" + N_year_N_month4);
+					//пихаем в разные строчки, пока - пойдёт. если что исправим
+					switch(N_part1) {
+						case "1": {
+							sql_q4 = "INSERT OR IGNORE INTO '" + "16" + "' " + "('N_year_N_month_N_day_trace','1_ежД_типУч','1_ежД_разрСнП_день','1_ежД_ПервПослСнег_день','1_ежД_днейСоСн','1_дСн_маршрут','1_дСн_числоСнегоСъёмок','1_дСн_высотаСн_максИзСр','1_дСн_высотаСн_максИзСр_дата','1_дСн_высотаСн_абсМакс','1_дСн_высотаСн_абсМакс_дата','1_дСн_максЗапВод_вСнеге_','1_дСн_максЗапВод_вСнеге_дата','1_дСн_максЗапВод_общий_','1_дСн_максЗапВод_общий_дата')" + " VALUES ('" + N_year_N_month4 + "_double_hash:" + string.Join<System.String>("_", sql_row4) + "','" + string.Join<System.String>("','", sql_row4) + "')";
+						}
+						break;
+						case "2": {
+							sql_q4 = "INSERT OR IGNORE INTO '" + "16" + "' " + "('N_year_N_month_N_day_trace','2_ежД_типУч','2_ежД_разрСнП_день','2_ежД_ПервПослСнег_день','2_ежД_днейСоСн','2_дСн_маршрут','2_дСн_числоСнегоСъёмок','2_дСн_высотаСн_максИзСр','2_дСн_высотаСн_максИзСр_дата','2_дСн_высотаСн_абсМакс','2_дСн_высотаСн_абсМакс_дата','2_дСн_максЗапВод_вСнеге_','2_дСн_максЗапВод_вСнеге_дата','2_дСн_максЗапВод_общий_','2_дСн_максЗапВод_общий_дата')" + " VALUES ('" + N_year_N_month4 + "_double_hash:" + string.Join<System.String>("_", sql_row4) + "','" + string.Join<System.String>("','", sql_row4) + "')";
+						}
+						break;
+					}
+					if(sql_insertQ(sql_bd_name4, sql_q4).Equals(0)) {
+						Debug.Log("В бд:===" + sql_bd_name4 + " ===уже есть эта строчка===" + sql_q4);
+					}
 				}
 			}
+			yield return new WaitForEndOfFrame();
 		}
 
 		/// <summary>
@@ -1063,11 +1114,11 @@ namespace MaxyGames.Generated {
 			if((rows_unparsed5.Count < 10)) {
 				delim_rowCount5 = rows_unparsed5.Count;
 			}
-			for(int index20 = 0; index20 < delim_rowCount5; index20 += 1) {
-				delim_row5 = rows_unparsed5[index20];
+			for(int index22 = 0; index22 < delim_rowCount5; index22 += 1) {
+				delim_row5 = rows_unparsed5[index22];
 				//Бегает по строке - ищет приключений
-				for(index21 = delim_row5.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index21 > -1; index21 = delim_row5.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index21 + 1))) {
-					delim_hash_ints5.Add((index21 + 1));
+				for(index23 = delim_row5.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index23 > -1; index23 = delim_row5.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index23 + 1))) {
+					delim_hash_ints5.Add((index23 + 1));
 				}
 			}
 			delimetrs5 = Enumerable.ToList<System.Int32>(delim_hash_ints5);
@@ -1087,9 +1138,9 @@ namespace MaxyGames.Generated {
 						break;
 					}
 					//основное тело распарса строки
-					for(int index22 = 0; index22 < (delimetrs5.Count - 1); index22 += 1) {
-						row_from5 = delimetrs5[index22];
-						row_length5 = (delimetrs5[(index22 + 1)] - row_from5);
+					for(int index24 = 0; index24 < (delimetrs5.Count - 1); index24 += 1) {
+						row_from5 = delimetrs5[index24];
+						row_length5 = (delimetrs5[(index24 + 1)] - row_from5);
 						//Проверка на неполную строчку. заполнение @
 						if((row_line5.Length > row_from5)) {
 							if((row_line5.Length >= (row_from5 + row_length5))) {
@@ -1135,18 +1186,36 @@ namespace MaxyGames.Generated {
 					case "3": {
 						//N11_2
 						sql_N21 = new List<string>();
-						for(int index23 = 0; index23 < "'160_mid','160_max','160_min','240_mid','240_max','240_min','320_mid','320_max','320_min','dayFrz_002','dayFrz_005','dayFrz_010','dayFrz_015','dayFrz_02','dayFrz_04','dayFrz_08','dayFrz_12','dayFrz_16','dayFrz_24','dayFrz_32'".Split(",", System.StringSplitOptions.None).Length; index23 += 1) {
-							sql_N21.Add(("'160_mid','160_max','160_min','240_mid','240_max','240_min','320_mid','320_max','320_min','dayFrz_002','dayFrz_005','dayFrz_010','dayFrz_015','dayFrz_02','dayFrz_04','dayFrz_08','dayFrz_12','dayFrz_16','dayFrz_24','dayFrz_32'".Split(",", System.StringSplitOptions.None).GetValue(index23) as string) + " = " + "'" + sql_row5[index23] + "'");
+						for(int index25 = 0; index25 < "'160_mid','160_max','160_min','240_mid','240_max','240_min','320_mid','320_max','320_min','dayFrz_002','dayFrz_005','dayFrz_010','dayFrz_015','dayFrz_02','dayFrz_04','dayFrz_08','dayFrz_12','dayFrz_16','dayFrz_24','dayFrz_32'".Split(",", System.StringSplitOptions.None).Length; index25 += 1) {
+							sql_N21.Add(("'160_mid','160_max','160_min','240_mid','240_max','240_min','320_mid','320_max','320_min','dayFrz_002','dayFrz_005','dayFrz_010','dayFrz_015','dayFrz_02','dayFrz_04','dayFrz_08','dayFrz_12','dayFrz_16','dayFrz_24','dayFrz_32'".Split(",", System.StringSplitOptions.None).GetValue(index25) as string) + " = " + "'" + sql_row5[index25] + "'");
 						}
 						sql_q5 = "UPDATE '" + "19" + "'" + " SET " + string.Join<System.String>(", ", sql_N21) + " WHERE " + "N_year_N_month='" + N_year_N_month5 + "'";
 					}
 					break;
 				}
 				if(sql_insertQ(sql_bd_name5, sql_q5).Equals(0)) {
-					Debug.Log("В бд:===" + sql_bd_name5 + " ===уже есть эта строчка===" + sql_q5);
-					new _utillz()._2log("В бд:===" + sql_bd_name5 + " ===уже есть эта строчка===" + sql_q5, false);
+					Debug.Log("бд:" + sql_bd_name5 + "==" + "Ntable:" + "19" + "===Nyear:" + N_year_N_month5);
+					switch(N_part2) {
+						case "2": {
+							sql_q5 = "INSERT OR IGNORE INTO '" + "19" + "' " + "('N_year_N_month','020_mid','020_max','020_min','040_mid','040_max','040_min','080_mid','080_max','080_min','120_mid','120_max','120_min')" + " VALUES ('" + N_year_N_month5 + "_double','" + string.Join<System.String>("','", sql_row5) + "')";
+						}
+						break;
+						case "3": {
+							//N11_2
+							sql_N21 = new List<string>();
+							for(int index26 = 0; index26 < "'160_mid','160_max','160_min','240_mid','240_max','240_min','320_mid','320_max','320_min','dayFrz_002','dayFrz_005','dayFrz_010','dayFrz_015','dayFrz_02','dayFrz_04','dayFrz_08','dayFrz_12','dayFrz_16','dayFrz_24','dayFrz_32'".Split(",", System.StringSplitOptions.None).Length; index26 += 1) {
+								sql_N21.Add(("'160_mid','160_max','160_min','240_mid','240_max','240_min','320_mid','320_max','320_min','dayFrz_002','dayFrz_005','dayFrz_010','dayFrz_015','dayFrz_02','dayFrz_04','dayFrz_08','dayFrz_12','dayFrz_16','dayFrz_24','dayFrz_32'".Split(",", System.StringSplitOptions.None).GetValue(index26) as string) + " = " + "'" + sql_row5[index26] + "'");
+							}
+							sql_q5 = "UPDATE '" + "19" + "'" + " SET " + string.Join<System.String>(", ", sql_N21) + " WHERE " + "N_year_N_month='" + N_year_N_month5 + "_double'";
+						}
+						break;
+					}
+					if(sql_insertQ(sql_bd_name5, sql_q5).Equals(0)) {
+						Debug.Log("В бд:===" + sql_bd_name5 + " ===уже есть эта строчка===" + sql_q5);
+					}
 				}
 			}
+			yield return new WaitForEndOfFrame();
 		}
 	}
 }
