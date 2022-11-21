@@ -52,6 +52,7 @@ namespace MaxyGames.Generated {
 			foreach(string loopObject in Files) {
 				path = loopObject;
 				file_data = File.ReadAllText(path).Replace("", "").Replace("", "");
+				File.Delete(path);
 				table = Enumerable.ToList<System.String>(file_data.Trim().Split("Табли", System.StringSplitOptions.RemoveEmptyEntries));
 				objectVariable.gameObject.GetComponent<TMPro.TMP_Text>().text = path;
 				currentFile = (currentFile + 1);
@@ -104,7 +105,7 @@ namespace MaxyGames.Generated {
 							case "7a": {
 							}
 							break;
-							case "12": {
+							case "": {
 							}
 							break;
 							case "11": {
@@ -125,8 +126,8 @@ namespace MaxyGames.Generated {
 								//получатель месяца-года для новых файлов 2016+
 								foreach(string tempVar in _rowUnparsed) {
 									loopObject2 = tempVar;
-									if(Regex.IsMatch(loopObject2, "^(?!.*Год.*).+(\\S+) *(\\d{4})")) {
-										N_year_N_month = "y" + Regex.Match(loopObject2, "(\\S+) *(\\d{4})", RegexOptions.None).Result("$2") + "_m" + months[Regex.Match(loopObject2, "(\\S+) *(\\d{4})", RegexOptions.None).Result("$1")];
+									if(Regex.IsMatch(loopObject2, "^\\s*(\\S+) *(\\d{4})")) {
+										N_year_N_month = "y" + Regex.Match(loopObject2, "^\\s*(\\S+) *(\\d{4})", RegexOptions.None).Result("$2") + "_m" + months[Regex.Match(loopObject2, "^\\s*(\\S+) *(\\d{4})", RegexOptions.None).Result("$1")];
 									}
 									if(string.IsNullOrWhiteSpace(N_year_N_month)) {
 										N_year_N_month = N_year_N_month_FromHeader;
@@ -134,7 +135,6 @@ namespace MaxyGames.Generated {
 									Qtable = parseRow(delimetrs, new List<string>(), N_table, N_year_N_month, loopObject2);
 									sql_insertTables(Qtable, N_table, N_year_N_month);
 								}
-								yield return new WaitForEndOfFrame();
 							}
 							break;
 						}
@@ -144,6 +144,7 @@ namespace MaxyGames.Generated {
 				Debug.Log("След файл");
 				sql_close();
 				currentTable = 0;
+				yield return new WaitForEndOfFrame();
 			}
 			currentFile = 0;
 		}
@@ -158,6 +159,7 @@ namespace MaxyGames.Generated {
 			string tmp_ifNextMonth = "";
 			int tmp_row_maxLenght = 0;
 			int tmp_row_hulfLenght = 0;
+			int year = 0;
 			_rowsUnparsed.Clear();
 			_rowsUnparsed = new List<string>();
 			_2thPart = new List<string>();
@@ -165,15 +167,46 @@ namespace MaxyGames.Generated {
 			tmp_row_maxLenght = 0;
 			switch(N_table) {
 				case "12": {
-					tmp_ifNextMonth = "";
-					//непилимые таблицы
-					foreach(string loopObject3 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
-						tmp_row_raw = loopObject3;
-						if(loopObject3.Trim().ToLower().Contains("Переход".ToLower())) {
-							//если есть в строке "Переход на следующий месяц"
-							tmp_ifNextMonth = "";
-						} else {
-							_rowsUnparsed.Add(tmp_ifNextMonth + tmp_row_raw);
+					//Если шапка с пробелами, то 2 столбца
+					if(Regex.IsMatch(One_table_data, "(═|=) ")) {
+						//пилим 12 таблицу пополам
+						foreach(string loopObject3 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
+							if(!(Regex.IsMatch(loopObject3.Trim(), "^ца\\D*(\\d+)\\."))) {
+								tmp_row_raw = loopObject3;
+								if((tmp_row_raw.Length > tmp_row_maxLenght)) {
+									//Тут всегда самая большая длина строки (из шапки)
+									tmp_row_maxLenght = tmp_row_raw.Length;
+									tmp_row_hulfLenght = (tmp_row_maxLenght / 2);
+								}
+								//если первая неполная
+								if((tmp_row_hulfLenght > tmp_row_raw.Length)) {
+									//Если текущая строка меньше половины максимальной
+									_rowsUnparsed.Add(tmp_row_raw.Substring(0, tmp_row_raw.Length));
+								} else {
+									//Если текущая строка больше половины максимальной
+									_rowsUnparsed.Add(tmp_row_raw.Substring(0, tmp_row_hulfLenght));
+									//второй столбец. засовываем оставшуюся строку
+									_2thPart.Add(tmp_row_raw.Substring(tmp_row_hulfLenght, (tmp_row_raw.Length - tmp_row_hulfLenght)));
+								}
+							}
+						}
+						foreach(string loopObject4 in _2thPart) {
+							if(Regex.IsMatch(loopObject4.TrimStart(), "^\\d{1,3}\\.")) {
+								//второго столбца добавляем только строки
+								_rowsUnparsed.Add(loopObject4);
+							}
+						}
+					} else {
+						tmp_ifNextMonth = "";
+						//непилимые таблицы
+						foreach(string loopObject5 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
+							tmp_row_raw = loopObject5;
+							if(loopObject5.Trim().ToLower().Contains("Переход".ToLower())) {
+								//если есть в строке "Переход на следующий месяц"
+								tmp_ifNextMonth = "";
+							} else {
+								_rowsUnparsed.Add(tmp_ifNextMonth + tmp_row_raw);
+							}
 						}
 					}
 				}
@@ -181,9 +214,9 @@ namespace MaxyGames.Generated {
 				default: {
 					tmp_ifNextMonth = "";
 					//непилимые таблицы
-					foreach(string loopObject3 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
-						tmp_row_raw = loopObject3;
-						if(loopObject3.Trim().ToLower().Contains("Переход".ToLower())) {
+					foreach(string loopObject5 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
+						tmp_row_raw = loopObject5;
+						if(loopObject5.Trim().ToLower().Contains("Переход".ToLower())) {
 							//если есть в строке "Переход на следующий месяц"
 							tmp_ifNextMonth = "";
 						} else {
@@ -205,11 +238,11 @@ namespace MaxyGames.Generated {
 			HashSet<int> tmp_hash_ints = new HashSet<int>();
 			switch(N_table) {
 				case "12": {
-					foreach(string loopObject4 in _rowsUnparsed) {
-						if(Regex.IsMatch(loopObject4.Trim(), "^ *\\d{1,3}\\.")) {
+					foreach(string loopObject6 in _rowsUnparsed) {
+						if(Regex.IsMatch(loopObject6.Trim(), "^ *\\d{1,3}\\.")) {
 							return Enumerable.ToList<System.Int32>(tmp_hash_ints);
 						} else {
-							row = loopObject4;
+							row = loopObject6;
 							//Бегает по строке - ищет приключений
 							for(index = row.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index > -1; index = row.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index + 1))) {
 								tmp_hash_ints.Add((index + 1));
@@ -225,11 +258,11 @@ namespace MaxyGames.Generated {
 				}
 				break;
 				default: {
-					foreach(string loopObject5 in _rowsUnparsed) {
-						if(Regex.IsMatch(loopObject5.Trim(), "^ *\\d{1,3}\\.")) {
+					foreach(string loopObject7 in _rowsUnparsed) {
+						if(Regex.IsMatch(loopObject7.Trim(), "^ *\\d{1,3}\\.")) {
 							return Enumerable.ToList<System.Int32>(tmp_hash_ints);
 						} else {
-							row = loopObject5;
+							row = loopObject7;
 							//Бегает по строке - ищет приключений
 							for(index1 = row.IndexOfAny(new char[] { '╦', '┬', '|', '¦' }); index1 > -1; index1 = row.IndexOfAny(new char[] { '┬', '╦', '|', '¦' }, (index1 + 1))) {
 								tmp_hash_ints.Add(index1);
@@ -240,8 +273,8 @@ namespace MaxyGames.Generated {
 				}
 				break;
 			}
-			foreach(int loopObject6 in tmp_hash_ints) {
-				Debug.Log(loopObject6);
+			foreach(int loopObject8 in tmp_hash_ints) {
+				Debug.Log(loopObject8);
 			}
 			return Enumerable.ToList<System.Int32>(tmp_hash_ints);
 		}
@@ -357,11 +390,11 @@ namespace MaxyGames.Generated {
 		/// нифига не работает почему то, на большом количестве разных таблиц.
 		/// </summary>
 		public void sql_close() {
-			foreach(KeyValuePair<string, SqliteCommand> loopObject7 in sql_cmnds) {
-				loopObject7.Value.Dispose();
+			foreach(KeyValuePair<string, SqliteCommand> loopObject9 in sql_cmnds) {
+				loopObject9.Value.Dispose();
 			}
-			foreach(KeyValuePair<string, SqliteConnection> loopObject8 in sql_Connections) {
-				loopObject8.Value.Dispose();
+			foreach(KeyValuePair<string, SqliteConnection> loopObject10 in sql_Connections) {
+				loopObject10.Value.Dispose();
 			}
 			SqliteConnection.ClearAllPools();
 			System.GC.Collect();
@@ -423,8 +456,8 @@ namespace MaxyGames.Generated {
 			string q_simple = "";
 			List<string> _11_2_tmp = default(List<string>);
 			string tmp_21_2 = "";
-			foreach(List<string> loopObject9 in q_table) {
-				row1 = loopObject9;
+			foreach(List<string> loopObject11 in q_table) {
+				row1 = loopObject11;
 				db_name = bd_names[row1[0].ToLower()];
 				//убираем название бд из строки. ненужно
 				row1.RemoveAt(0);
@@ -570,10 +603,42 @@ namespace MaxyGames.Generated {
 					}
 					break;
 					case "12": {
-						//если новая 12 таблица - то обычный. если старая (короткая) то false
-						if(!((row1.Count > 10))) {
-							//N12
-							q = "REPLACE INTO '" + "12" + "' " + "('N_year_N_month','dj','c','cm','tt','izm','gl','mm','gd','G')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
+						//======================
+						switch(row1.Count) {
+							case 9: {
+								//N12 для половинных(двойных) таблиц
+								q = "INSERT OR IGNORE INTO '" + "12" + "' " + "('N_year_N_month','dj','c','cm','tt','izm','gl','mm','gd','G')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
+								//если повтор
+								if(sql_insertQ(db_name, q).Equals(0)) {
+									//еслипрямь и дубликата дубликат есть, жжесть
+									Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
+									//N12 для половинных(двойных) таблиц
+									q = "INSERT OR IGNORE INTO '" + "12" + "' " + "('N_year_N_month','dj','c','cm','tt','izm','gl','mm','gd','G')" + " VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
+									//если повтор
+									if(sql_insertQ(db_name, q).Equals(0)) {
+										//еслипрямь и дубликата дубликат есть, жжесть
+										Debug.Log("===2Повтор===" + db_name + "===" + q);
+									}
+								}
+							}
+							break;
+							case 15: {
+								//N12 для нормальных таблиц
+								q = "INSERT OR IGNORE INTO '" + "12" + "' " + "('N_year_N_month','dj','c','cm','tt','izm','gl','mm','gd','G','dm','pm','pb','mg','sCh','Sh')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
+								//если повтор
+								if(sql_insertQ(db_name, q).Equals(0)) {
+									//еслипрямь и дубликата дубликат есть, жжесть
+									Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
+									//N12 для нормальных таблиц
+									q = "INSERT OR IGNORE INTO '" + "12" + "' " + "('N_year_N_month','dj','c','cm','tt','izm','gl','mm','gd','G','dm','pm','pb','mg','sCh','Sh')" + " VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
+									//если повтор
+									if(sql_insertQ(db_name, q).Equals(0)) {
+										//еслипрямь и дубликата дубликат есть, жжесть
+										Debug.Log("===2Повтор===" + db_name + "===" + q);
+									}
+								}
+							}
+							break;
 						}
 					}
 					break;
@@ -756,9 +821,9 @@ namespace MaxyGames.Generated {
 		public void bd_names() {
 			bd_names.Clear();
 			//Список на замену названий с "русского" на Русский
-			foreach(string loopObject10 in File.ReadAllText(Application.streamingAssetsPath + "/" + "tmp.txt").Split(System.Environment.NewLine, System.StringSplitOptions.RemoveEmptyEntries)) {
-				if(!(bd_names.ContainsKey(loopObject10.Split(new char[] { '=' })[1].ToLower()))) {
-					bd_names.Add(loopObject10.Split(new char[] { '=' })[1].ToLower(), loopObject10.Split(new char[] { '=' })[0]);
+			foreach(string loopObject12 in File.ReadAllText(Application.streamingAssetsPath + "/" + "tmp.txt").Split(System.Environment.NewLine, System.StringSplitOptions.RemoveEmptyEntries)) {
+				if(!(bd_names.ContainsKey(loopObject12.Split(new char[] { '=' })[1].ToLower()))) {
+					bd_names.Add(loopObject12.Split(new char[] { '=' })[1].ToLower(), loopObject12.Split(new char[] { '=' })[0]);
 				}
 			}
 		}
