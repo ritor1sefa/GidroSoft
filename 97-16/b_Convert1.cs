@@ -606,14 +606,14 @@ namespace MaxyGames.Generated {
 						//======================
 						switch(row1.Count) {
 							case 9: {
-								//N12 для половинных(двойных) таблиц
-								q = "INSERT OR IGNORE INTO '" + "12" + "' " + "('N_year_N_month','dj','c','cm','tt','izm','gl','mm','gd','G')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
+								//N12 для половинных(двойных) таблиц. в N11
+								q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЖ','С','СМ','ТТ','ИЗМ','ГЛ','ММ','ГД','Г')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
 								//если повтор
 								if(sql_insertQ(db_name, q).Equals(0)) {
 									//еслипрямь и дубликата дубликат есть, жжесть
 									Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-									//N12 для половинных(двойных) таблиц
-									q = "INSERT OR IGNORE INTO '" + "12" + "' " + "('N_year_N_month','dj','c','cm','tt','izm','gl','mm','gd','G')" + " VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
+									//N12 для половинных(двойных) таблиц. в N11
+									q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЖ','С','СМ','ТТ','ИЗМ','ГЛ','ММ','ГД','Г')" + " VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
 									//если повтор
 									if(sql_insertQ(db_name, q).Equals(0)) {
 										//еслипрямь и дубликата дубликат есть, жжесть
@@ -623,14 +623,14 @@ namespace MaxyGames.Generated {
 							}
 							break;
 							case 15: {
-								//N12 для нормальных таблиц
-								q = "INSERT OR IGNORE INTO '" + "12" + "' " + "('N_year_N_month','dj','c','cm','tt','izm','gl','mm','gd','G','dm','pm','pb','mg','sCh','Sh')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
+								//N12 для нормальных таблиц. в N11
+								q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЖ','С','СМ','ТТ','ИЗМ','ГЛ','ММ','ГД','Г','ДМ','ПМ','ПБ','МГ','СЧ','Ш')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
 								//если повтор
 								if(sql_insertQ(db_name, q).Equals(0)) {
 									//еслипрямь и дубликата дубликат есть, жжесть
 									Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-									//N12 для нормальных таблиц
-									q = "INSERT OR IGNORE INTO '" + "12" + "' " + "('N_year_N_month','dj','c','cm','tt','izm','gl','mm','gd','G','dm','pm','pb','mg','sCh','Sh')" + " VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
+									//N12 для нормальных таблиц. в N11
+									q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЖ','С','СМ','ТТ','ИЗМ','ГЛ','ММ','ГД','Г','ДМ','ПМ','ПБ','МГ','СЧ','Ш')" + " VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
 									//если повтор
 									if(sql_insertQ(db_name, q).Equals(0)) {
 										//еслипрямь и дубликата дубликат есть, жжесть
