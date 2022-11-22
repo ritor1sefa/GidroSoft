@@ -671,6 +671,8 @@ namespace MaxyGames.Generated {
 			List<string> row3 = new List<string>();
 			List<string> Ns_Table = new List<string>();
 			string _1thHead = "";
+			List<List<string>> tmp_oldList = new List<List<string>>();
+			bool delete = false;
 			Ns_Table = sql_master_tables("_empty");
 			foreach(string loopObject14 in sql_db_names) {
 				bd_name = loopObject14;
@@ -680,20 +682,21 @@ namespace MaxyGames.Generated {
 					objectVariable2.gameObject.GetComponent<TMPro.TMP_Text>().text = num_table;
 					_1thHead = sql_headers(bd_name, num_table);
 					foreach(List<string> loopObject16 in sql_getListList(bd_name, "SELECT * FROM '" + num_table + "' WHERE  \"" + _1thHead + "\" LIKE '%_double%'")) {
+						tmp_oldList = sql_getListList(bd_name, "SELECT * FROM '" + num_table + "' WHERE  \"" + _1thHead + "\" =  '" + loopObject16[0].Replace("_double", "") + "'");
 						for(index3 = 1; index3 < loopObject16.Count; index3 += 1) {
-							if(loopObject16[index3].Equals(sql_getListList(bd_name, "SELECT * FROM '" + num_table + "' WHERE  \"" + _1thHead + "\" =  '" + loopObject16[0].Replace("_double", "") + "'")[0][index3])) {
-								//Совпадение=пропускаем финиш, првоеряем следующую ячейку этой же строки
-								continue;
-							} else {
-								//несовпадение = заканчиваем проверку идём к финишу
+							if(!(loopObject16[index3].Equals(tmp_oldList[0][index3]))) {
+								delete = false;
+								//несовпадение = прерываем и сохраняем нафиг
 								break;
 							}
+							delete = true;
+						}
+						yield return new WaitForEndOfFrame();
+						if(delete) {
 							//удаляем лишнюю строчку
 							sql_getListList(bd_name, "DELETE FROM '" + num_table + "' WHERE  \"" + _1thHead + "\" =  '" + loopObject16[0] + "'");
 							Debug.Log(bd_name + "=Удалено=" + "DELETE FROM '" + num_table + "' WHERE  \"" + _1thHead + "\" =  '" + loopObject16[0] + "'" + "");
-							break;
 						}
-						yield return new WaitForEndOfFrame();
 					}
 					yield return new WaitForEndOfFrame();
 				}
