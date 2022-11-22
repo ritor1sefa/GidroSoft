@@ -18,6 +18,7 @@ namespace MaxyGames.Generated {
 		public int currentFile = 0;
 		public int currentTable = 0;
 		public Dictionary<string, string> bd_names = new Dictionary<string, string>();
+		public List<string> sql_db_names = new List<string>();
 		public GameObject objectVariable;
 		public GameObject objectVariable1;
 		public GameObject objectVariable2;
@@ -26,6 +27,7 @@ namespace MaxyGames.Generated {
 		private int index;
 		private int index1;
 		public GameObject objectVariable3;
+		private int index3;
 
 		/// <summary>
 		/// sqlite запрос на выборку столбца данных по году+месяцу
@@ -34,6 +36,9 @@ namespace MaxyGames.Generated {
 		/// </summary>
 		private void Update() {
 			string variable0 = "";
+			if(Input.GetKeyUp(KeyCode.UpArrow)) {
+				base.StartCoroutine(sql_deleter_doublers());
+			}
 		}
 
 		public System.Collections.IEnumerator loadFromFiles() {
@@ -453,9 +458,7 @@ namespace MaxyGames.Generated {
 			List<string> row1 = new List<string>();
 			string db_name = "";
 			string q = "";
-			string q_simple = "";
-			List<string> _11_2_tmp = default(List<string>);
-			string tmp_21_2 = "";
+			string tmp_1thCLMN = "";
 			foreach(List<string> loopObject11 in q_table) {
 				row1 = loopObject11;
 				db_name = bd_names[row1[0].ToLower()];
@@ -467,99 +470,39 @@ namespace MaxyGames.Generated {
 					}
 					break;
 					case "1": {
-						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//добавляем метку дубликата
-							q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + sql_bd_name + "===" + sql_q);
-							}
-						}
+						tmp_1thCLMN = N_year_N_month;
+						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "2": {
-						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//добавляем метку дубликата
-							q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + sql_bd_name + "===" + sql_q);
-							}
-						}
+						tmp_1thCLMN = N_year_N_month;
+						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "3": {
 					}
 					break;
 					case "4": {
-						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//добавляем метку дубликата
-							q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + sql_bd_name + "===" + sql_q);
-							}
-						}
+						tmp_1thCLMN = N_year_N_month;
+						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "5": {
 					}
 					break;
 					case "6": {
-						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//добавляем метку дубликата
-							q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + sql_bd_name + "===" + sql_q);
-							}
-						}
+						tmp_1thCLMN = N_year_N_month;
+						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "7": {
-						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//добавляем метку дубликата
-							q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + sql_bd_name + "===" + sql_q);
-							}
-						}
+						tmp_1thCLMN = N_year_N_month;
+						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "8": {
-						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//добавляем метку дубликата
-							q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + sql_bd_name + "===" + sql_q);
-							}
-						}
+						tmp_1thCLMN = N_year_N_month;
+						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "9": {
@@ -569,209 +512,78 @@ namespace MaxyGames.Generated {
 					}
 					break;
 					case "11_1": {
+						tmp_1thCLMN = N_year_N_month;
 						//N11_1
-						q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЛ','ДЖ','МР','ЛД','ЖО','С','СЛ','ЗС','КС','КЛ','ТО','СМ','СЛМ','ТОМ','ГД','ИЛ','Р','И','ГЛ','ИЗМ','ГЛЦ','ДМ','Т','ТП')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
-						//если повтор
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//N11_1
-							q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЛ','ДЖ','МР','ЛД','ЖО','С','СЛ','ЗС','КС','КЛ','ТО','СМ','СЛМ','ТОМ','ГД','ИЛ','Р','И','ГЛ','ИЗМ','ГЛЦ','ДМ','Т','ТП')" + " VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + db_name + "===" + q);
-							}
-						}
+						q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЛ','ДЖ','МР','ЛД','ЖО','С','СЛ','ЗС','КС','КЛ','ТО','СМ','СЛМ','ТОМ','ГД','ИЛ','Р','И','ГЛ','ИЗМ','ГЛЦ','ДМ','Т','ТП')" + " VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "11_2": {
+						tmp_1thCLMN = N_year_N_month;
 						//N11_2
-						q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ТЛ','ТЛП','ТЗ','ТЛЗ','ТОС','ТЗО','ТТ','ТТО','МГС','П','МС','МО','МН','ММ','МГ','ПП','ПБ','ПЫЛ','Г','ПС','Ш','В','СЧ','МЖ')" + " VALUES ('" + N_year_N_month + "_p2','" + string.Join<System.String>("','", row1) + "')";
-						//если повтор
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//N11_1
-							q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ТЛ','ТЛП','ТЗ','ТЛЗ','ТОС','ТЗО','ТТ','ТТО','МГС','П','МС','МО','МН','ММ','МГ','ПП','ПБ','ПЫЛ','Г','ПС','Ш','В','СЧ','МЖ')" + " VALUES ('" + N_year_N_month + "_double_p2','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + db_name + "===" + q);
-							}
-						}
+						q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ТЛ','ТЛП','ТЗ','ТЛЗ','ТОС','ТЗО','ТТ','ТТО','МГС','П','МС','МО','МН','ММ','МГ','ПП','ПБ','ПЫЛ','Г','ПС','Ш','В','СЧ','МЖ')" + " VALUES ('" + tmp_1thCLMN + "_p2','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "12": {
 						//======================
+						tmp_1thCLMN = N_year_N_month;
 						switch(row1.Count) {
 							case 9: {
 								//N12 для половинных(двойных) таблиц. в N11
-								q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЖ','С','СМ','ТТ','ИЗМ','ГЛ','ММ','ГД','Г')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
-								//если повтор
-								if(sql_insertQ(db_name, q).Equals(0)) {
-									//еслипрямь и дубликата дубликат есть, жжесть
-									Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-									//N12 для половинных(двойных) таблиц. в N11
-									q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЖ','С','СМ','ТТ','ИЗМ','ГЛ','ММ','ГД','Г')" + " VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
-									//если повтор
-									if(sql_insertQ(db_name, q).Equals(0)) {
-										//еслипрямь и дубликата дубликат есть, жжесть
-										Debug.Log("===2Повтор===" + db_name + "===" + q);
-									}
-								}
+								q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЖ','С','СМ','ТТ','ИЗМ','ГЛ','ММ','ГД','Г')" + " VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 							}
 							break;
 							case 15: {
 								//N12 для нормальных таблиц. в N11
-								q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЖ','С','СМ','ТТ','ИЗМ','ГЛ','ММ','ГД','Г','ДМ','ПМ','ПБ','МГ','СЧ','Ш')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
-								//если повтор
-								if(sql_insertQ(db_name, q).Equals(0)) {
-									//еслипрямь и дубликата дубликат есть, жжесть
-									Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-									//N12 для нормальных таблиц. в N11
-									q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЖ','С','СМ','ТТ','ИЗМ','ГЛ','ММ','ГД','Г','ДМ','ПМ','ПБ','МГ','СЧ','Ш')" + " VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
-									//если повтор
-									if(sql_insertQ(db_name, q).Equals(0)) {
-										//еслипрямь и дубликата дубликат есть, жжесть
-										Debug.Log("===2Повтор===" + db_name + "===" + q);
-									}
-								}
+								q = "INSERT OR IGNORE INTO '" + "11" + "' " + "('N_year_N_month','ДЖ','С','СМ','ТТ','ИЗМ','ГЛ','ММ','ГД','Г','ДМ','ПМ','ПБ','МГ','СЧ','Ш')" + " VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 							}
 							break;
 						}
 					}
 					break;
 					case "13": {
-						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//добавляем метку дубликата
-							q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + sql_bd_name + "===" + sql_q);
-							}
-						}
+						tmp_1thCLMN = N_year_N_month;
+						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "14": {
+						tmp_1thCLMN = N_year_N_month + "_d" + row1[0] + "_h:m=" + Regex.Replace(row1[1], " +", ":");
 						//N14&N15
-						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_d" + row1[0] + "_h:m=" + Regex.Replace(row1[1], " +", ":") + "','" + string.Join<System.String>("','", row1) + "')";
-						//если повтор
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//N14&N15
-							q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double_d" + row1[0] + "_h:m=" + Regex.Replace(row1[1], " +", ":") + "','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + db_name + "===" + q);
-							}
-						}
+						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "15": {
+						tmp_1thCLMN = N_year_N_month + "_d" + row1[0] + "_h:m=" + Regex.Replace(row1[1], " +", ":");
 						//N14&N15
-						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_d" + row1[0] + "_h:m=" + Regex.Replace(row1[1], " +", ":") + "','" + string.Join<System.String>("','", row1) + "')";
-						//если повтор
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//N14&N15
-							q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double_d" + row1[0] + "_h:m=" + Regex.Replace(row1[1], " +", ":") + "','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + db_name + "===" + q);
-							}
-						}
+						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "16": {
+						tmp_1thCLMN = N_year_N_month + "_d" + row1[6] + "_trace:" + row1[5];
 						//N16&N17
-						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_d" + row1[6] + "_trace:" + row1[5] + "','" + string.Join<System.String>("','", row1) + "')";
-						//если повтор
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//N16&N17
-							q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double_d" + row1[6] + "_trace:" + row1[5] + "','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + db_name + "===" + q);
-							}
-						}
+						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "17": {
+						tmp_1thCLMN = N_year_N_month + "_d" + row1[6] + "_trace:" + row1[5];
 						//N16&N17
-						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_d" + row1[6] + "_trace:" + row1[5] + "','" + string.Join<System.String>("','", row1) + "')";
-						//если повтор
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//N16&N17
-							q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double_d" + row1[6] + "_trace:" + row1[5] + "','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + db_name + "===" + q);
-							}
-						}
+						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "20": {
-						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//добавляем метку дубликата
-							q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + sql_bd_name + "===" + sql_q);
-							}
-						}
+						tmp_1thCLMN = N_year_N_month;
+						q = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "21_2": {
+						tmp_1thCLMN = N_year_N_month;
 						//N21_2
-						q = "INSERT OR IGNORE INTO '" + "21" + "' " + "('N_year_N_month','020_mid', '020_max', '020_min', '040_mid', '040_max', '040_min', '080_mid', '080_max', '080_min', '120_mid', '120_max', '120_min')" + " VALUES ('" + N_year_N_month + "','" + string.Join<System.String>("','", row1) + "')";
-						//если повтор
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//N21_2
-							q = "INSERT OR IGNORE INTO '" + "21" + "' " + "('N_year_N_month','020_mid', '020_max', '020_min', '040_mid', '040_max', '040_min', '080_mid', '080_max', '080_min', '120_mid', '120_max', '120_min')" + " VALUES ('" + N_year_N_month + "_double','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + db_name + "===" + q);
-							}
-						}
+						q = "INSERT OR IGNORE INTO '" + "21" + "' " + "('N_year_N_month','020_mid', '020_max', '020_min', '040_mid', '040_max', '040_min', '080_mid', '080_max', '080_min', '120_mid', '120_max', '120_min')" + " VALUES ('" + tmp_1thCLMN + "','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "21_3": {
+						tmp_1thCLMN = N_year_N_month;
 						//N21_2
-						q = "INSERT OR IGNORE INTO '" + "21" + "' " + "('N_year_N_month','160_mid', '160_max', '160_min', '240_mid', '240_max', '240_min', '320_mid', '320_max', '320_min', 'dayFrz_002', 'dayFrz_005', 'dayFrz_010', 'dayFrz_015', 'dayFrz_02', 'dayFrz_04', 'dayFrz_08', 'dayFrz_12', 'dayFrz_16', 'dayFrz_24', 'dayFrz_32')" + " VALUES ('" + N_year_N_month + "_p2','" + string.Join<System.String>("','", row1) + "')";
-						//если повтор
-						if(sql_insertQ(db_name, q).Equals(0)) {
-							//еслипрямь и дубликата дубликат есть, жжесть
-							Debug.Log("1Повтор в бд:===" + db_name + "===" + q);
-							//N21_2
-							q = "INSERT OR IGNORE INTO '" + "21" + "' " + "('N_year_N_month','160_mid', '160_max', '160_min', '240_mid', '240_max', '240_min', '320_mid', '320_max', '320_min', 'dayFrz_002', 'dayFrz_005', 'dayFrz_010', 'dayFrz_015', 'dayFrz_02', 'dayFrz_04', 'dayFrz_08', 'dayFrz_12', 'dayFrz_16', 'dayFrz_24', 'dayFrz_32')" + " VALUES ('" + N_year_N_month + "_double_p2','" + string.Join<System.String>("','", row1) + "')";
-							//если повтор
-							if(sql_insertQ(db_name, q).Equals(0)) {
-								//еслипрямь и дубликата дубликат есть, жжесть
-								Debug.Log("===2Повтор===" + db_name + "===" + q);
-							}
-						}
+						q = "INSERT OR IGNORE INTO '" + "21" + "' " + "('N_year_N_month','160_mid', '160_max', '160_min', '240_mid', '240_max', '240_min', '320_mid', '320_max', '320_min', 'dayFrz_002', 'dayFrz_005', 'dayFrz_010', 'dayFrz_015', 'dayFrz_02', 'dayFrz_04', 'dayFrz_08', 'dayFrz_12', 'dayFrz_16', 'dayFrz_24', 'dayFrz_32')" + " VALUES ('" + tmp_1thCLMN + "_p2','" + string.Join<System.String>("','", row1) + "')";
 					}
 					break;
 					case "7a": {
@@ -785,6 +597,18 @@ namespace MaxyGames.Generated {
 					}
 					break;
 				}
+				if((q.Length > 10)) {
+					//если повтор
+					if(sql_insertQ(db_name, q).Equals(0)) {
+						//еслипрямь и дубликата дубликат есть, жжесть
+						Debug.Log("1Повтор в бд:===" + db_name + "===" + N_table + "===" + q);
+						//если повтор
+						if(sql_insertQ(db_name, q.Replace(N_year_N_month, N_year_N_month + "_double")).Equals(0)) {
+							//еслипрямь и дубликата дубликат есть, жжесть
+							Debug.Log("2Повтор в бд:===" + db_name + "===" + N_table + "===" + q);
+						}
+					}
+				}
 			}
 			return 0;
 		}
@@ -793,18 +617,17 @@ namespace MaxyGames.Generated {
 		/// Получение списка таблиц в бд
 		/// not need?
 		/// </summary>
-		private List<string> sql_headers(string db_name) {
+		private string sql_headers(string db_name, string N_table) {
 			SqliteCommand cmnd1 = new SqliteCommand();
 			SqliteDataReader reader = default(SqliteDataReader);
+			string _1thCLMN = "";
 			if(sql_connect(db_name)) {
 				cmnd1 = sql_Connections[db_name].CreateCommand();
-				cmnd1.CommandText = "PRAGMA table_info (1) ";
+				cmnd1.CommandText = "SELECT name FROM pragma_table_info('" + N_table + "') ";
 				reader = cmnd1.ExecuteReader();
-				while(reader.Read()) {
-					new _utillz()._2log((reader.GetValue(1) as string), false);
-				}
+				_1thCLMN = (reader.GetValue(0) as string);
 			}
-			return new List<string>();
+			return _1thCLMN;
 		}
 
 		public void button() {
@@ -826,6 +649,88 @@ namespace MaxyGames.Generated {
 					bd_names.Add(loopObject12.Split(new char[] { '=' })[1].ToLower(), loopObject12.Split(new char[] { '=' })[0]);
 				}
 			}
+		}
+
+		private void Start() {
+			foreach(string loopObject13 in Directory.GetFiles(Application.streamingAssetsPath + "/" + "files/bd/", "*.sqlite")) {
+				sql_db_names.Add(Path.GetFileNameWithoutExtension(loopObject13));
+			}
+			sql_db_names.Remove("_log");
+			sql_db_names.Remove("_empty");
+			sql_db_names.Remove("_emptyY");
+		}
+
+		/// <summary>
+		/// Удаление повторов из бд
+		/// </summary>
+		private System.Collections.IEnumerator sql_deleter_doublers() {
+			SqliteCommand cmnd2 = new SqliteCommand();
+			SqliteDataReader reader1 = default(SqliteDataReader);
+			string num_table = "";
+			string bd_name = "";
+			List<string> row3 = new List<string>();
+			List<string> Ns_Table = new List<string>();
+			string _1thHead = "";
+			Ns_Table = sql_master_tables("_empty");
+			foreach(string loopObject14 in sql_db_names) {
+				bd_name = loopObject14;
+				objectVariable.gameObject.GetComponent<TMPro.TMP_Text>().text = bd_name;
+				foreach(string loopObject15 in Ns_Table) {
+					num_table = loopObject15;
+					objectVariable2.gameObject.GetComponent<TMPro.TMP_Text>().text = num_table;
+					_1thHead = sql_headers(bd_name, num_table);
+					foreach(List<string> loopObject16 in sql_getListList(bd_name, "SELECT * FROM '" + num_table + "' WHERE  \"" + _1thHead + "\" LIKE '%_double%'")) {
+						for(index3 = 1; index3 < loopObject16.Count; index3 += 1) {
+							if(loopObject16[index3].Equals(sql_getListList(bd_name, "SELECT * FROM '" + num_table + "' WHERE  \"" + _1thHead + "\" =  '" + loopObject16[0].Replace("_double", "") + "'")[0][index3])) {
+								//Совпадение=пропускаем финиш, првоеряем следующую ячейку этой же строки
+								continue;
+							} else {
+								//несовпадение = заканчиваем проверку идём к финишу
+								break;
+							}
+							//удаляем лишнюю строчку
+							sql_getListList(bd_name, "DELETE FROM '" + num_table + "' WHERE  \"" + _1thHead + "\" =  '" + loopObject16[0] + "'");
+							Debug.Log(bd_name + "=Удалено=" + "DELETE FROM '" + num_table + "' WHERE  \"" + _1thHead + "\" =  '" + loopObject16[0] + "'" + "");
+							break;
+						}
+						yield return new WaitForEndOfFrame();
+					}
+					yield return new WaitForEndOfFrame();
+				}
+				yield return new WaitForEndOfFrame();
+			}
+			sql_close();
+			yield return new WaitForEndOfFrame();
+		}
+
+		/// <summary>
+		/// Получение таблицы по запросу
+		/// </summary>
+		private List<List<string>> sql_getListList(string db_name, string q) {
+			List<string> row2 = new List<string>();
+			List<List<string>> table1 = new List<List<string>>();
+			table1 = new List<List<string>>();
+			if(sql_connect(db_name)) {
+				using(SqliteCommand value2 = sql_Connections[db_name].CreateCommand()) {
+					sql_cmnds.Add(db_name, value2);
+					sql_cmnds[db_name].CommandText = q;
+					sql_readers.Add(db_name, sql_cmnds[db_name].ExecuteReader());
+					while(sql_readers[db_name].Read()) {
+						for(int index4 = 0; index4 < sql_readers[db_name].FieldCount; index4 += 1) {
+							//попадаются null, поэтому вручную пустой стринг назначаем
+							if(sql_readers[db_name].IsDBNull(index4)) {
+								row2.Add("");
+							} else {
+								row2.Add(sql_readers[db_name].GetString(index4));
+							}
+						}
+						table1.Add(row2);
+						row2 = new List<string>();
+					}
+				}
+			}
+			sql_close();
+			return table1;
 		}
 	}
 }
