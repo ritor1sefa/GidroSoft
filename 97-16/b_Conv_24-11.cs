@@ -27,6 +27,9 @@ namespace MaxyGames.Generated {
 
 		private void Update() {
 			string variable0 = "";
+			if(Input.GetKeyUp(KeyCode.UpArrow)) {
+				Debug.Log(sql_master_tables("_emptyNew").Count);
+			}
 		}
 
 		public void button() {
@@ -100,16 +103,15 @@ namespace MaxyGames.Generated {
 		/// <summary>
 		/// подключение к бд, если не подключено. 
 		/// </summary>
-		private bool sql_connect(string db_name) {
+		private bool sql_dbExists(string db_name) {
 			string path = "";
-			SqliteConnection connection = default(SqliteConnection);
+			SqliteConnection connection1 = default(SqliteConnection);
 			path = Application.streamingAssetsPath + "/" + "files/bd/" + db_name + ".sqlite";
 			//Копирование пустой бд в новый файл
 			if(!(File.Exists(path))) {
+				//Копирование пустой бд в новый файл
 				File.Copy(Application.streamingAssetsPath + "/" + "files/" + "_emptyNew" + ".sqlite", path, false);
 			}
-			connection = new SqliteConnection("URI=file:" + path);
-			connection.Open();
 			return File.Exists(path);
 		}
 
@@ -124,6 +126,23 @@ namespace MaxyGames.Generated {
 		/// </summary>
 		private List<string> sql_master_tables(string db_name) {
 			List<string> tables1 = new List<string>();
+			SqliteCommand cmnd = default(SqliteCommand);
+			SqliteDataReader reader = default(SqliteDataReader);
+			SqliteConnection connection = new SqliteConnection();
+			tables1.Clear();
+			if(sql_dbExists(db_name)) {
+				using(SqliteConnection value = new SqliteConnection("URI=file:" + path)) {
+					connection = value;
+					connection.Open();
+					cmnd = connection.CreateCommand();
+					cmnd.CommandText = "SELECT name FROM sqlite_master WHERE type='table'";
+					reader = cmnd.ExecuteReader();
+					while(reader.Read()) {
+						tables1.Add(reader.GetString(0));
+					}
+				}
+			}
+			return tables1;
 		}
 
 		/// <summary>
@@ -131,15 +150,15 @@ namespace MaxyGames.Generated {
 		/// </summary>
 		private int sql_insertQ(string db_name, string q) {
 			int sql_writed = 0;
-			SqliteCommand cmnd = new SqliteCommand();
+			SqliteCommand cmnd1 = new SqliteCommand();
 		}
 
 		/// <summary>
 		/// Получение списка таблиц в бд
 		/// </summary>
 		private List<string> sql_headers(string db_name) {
-			SqliteCommand cmnd1 = new SqliteCommand();
-			SqliteDataReader reader = default(SqliteDataReader);
+			SqliteCommand cmnd2 = new SqliteCommand();
+			SqliteDataReader reader1 = default(SqliteDataReader);
 		}
 
 		public void sql_log(string parameter, string parameter2) {}
@@ -236,10 +255,8 @@ namespace MaxyGames.Generated {
 						row_parsed.Add("@");
 					}
 					//Добавление в Дикт.
-					n1.Add(NameOfDB + "_" + Year + "_" + Month + "_" + row_day.ToString() + "_" + row_cHour, row_parsed);
+					n1.Add(NameOfDB + "&" + Year + "_" + Month + "_" + row_day.ToString() + "_" + row_cHour, row_parsed);
 					row_parsed = new List<string>();
-					//еслипрямь и дубликата дубликат есть, жжесть
-					Debug.Log(n1.Count);
 				}
 			}
 			yield return new WaitForEndOfFrame();
