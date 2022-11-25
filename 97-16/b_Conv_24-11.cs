@@ -16,9 +16,10 @@ namespace MaxyGames.Generated {
 		public List<string> rows_unparsed = new List<string>();
 		public List<int> delimetrs = new List<int>();
 		public string NameOfDB = "";
+		public List<string> bd_names_array = new List<string>();
 		public string Year = "";
 		public string Month = "";
-		public Dictionary<string, List<string>> n1 = new Dictionary<string, List<string>>();
+		public Dictionary<string, string> n1 = new Dictionary<string, string>();
 		public GameObject objectVariable;
 		public GameObject objectVariable1;
 		public GameObject objectVariable2;
@@ -33,6 +34,7 @@ namespace MaxyGames.Generated {
 		}
 
 		public void button() {
+			n1 = new Dictionary<string, string>();
 			//Собираем названия для бд
 			bd_names();
 			Files = Directory.GetFiles("Z:\\", "*.txt");
@@ -52,6 +54,9 @@ namespace MaxyGames.Generated {
 
 		public System.Collections.IEnumerator convert_mainLoop() {
 			string fPath = "";
+			string q2 = "";
+			string tmp_q = "";
+			bd_names_array = new List<string>();
 			for(int index = 0; index < Files.Length; index += 1) {
 				fPath = Files[index];
 				objectVariable1.gameObject.GetComponent<TMPro.TMP_Text>().text = fPath;
@@ -59,7 +64,11 @@ namespace MaxyGames.Generated {
 				yield return selector_loop(fPath);
 				Debug.Log("След файл");
 			}
-			Debug.Log("!Закончено!");
+			Debug.Log("Закончена обработка файлов.");
+			//перебор названий постов-файлов бд
+			foreach(string loopObject1 in bd_names_array) {
+				Debug.Log("Таблица N1, внесено:" + n1_sql(loopObject1).ToString());
+			}
 		}
 
 		public System.Collections.IEnumerator selector_loop(string path) {
@@ -75,15 +84,19 @@ namespace MaxyGames.Generated {
 			if(Regex.IsMatch(Path.GetFileName(path), "(^\\D*)(\\d+)-(\\d+)")) {
 				Year = Regex.Match(Path.GetFileName(path), "(^\\D*)(\\d+)-(\\d+)").Result("$3");
 				Month = Regex.Match(Path.GetFileName(path), "(^\\D*)(\\d+)-(\\d+)").Result("$2");
-				//название поста, добавить сюда же потом прохд через bd_names
+				//название поста, добавить сюда же потом проход через bd_names
 				NameOfDB = Regex.Match(Path.GetFileName(path), "(^\\D*)(\\d+)-(\\d+)").Result("$1").Trim();
+				//Проверка наличия в списке. если уже есть, то не добавлять, что бы потом лишний раз не бегать
+				if(!(bd_names_array.Contains(NameOfDB))) {
+					//Добавление имени бд для последующего sql инжекта
+					bd_names_array.Add(NameOfDB);
+				}
 				file_data = File.ReadAllText(path);
 				tables = Enumerable.ToList<System.String>(file_data.Trim().Split("Станция", System.StringSplitOptions.RemoveEmptyEntries));
-				foreach(string loopObject1 in tables) {
-					One_table_data = loopObject1;
+				foreach(string loopObject2 in tables) {
+					One_table_data = loopObject2;
 					if(One_table_data.Contains("Атм. давление,")) {
-						Debug.Log("=1");
-						//11
+						Debug.Log("=n1");
 						yield return n1(One_table_data);
 					} else if(One_table_data.Contains("С У Т О Ч Н Ы Е   Д А Н Н Ы Е")) {
 						Debug.Log(One_table_data);
@@ -105,7 +118,7 @@ namespace MaxyGames.Generated {
 		/// </summary>
 		private bool sql_dbExists(string db_name) {
 			string path = "";
-			SqliteConnection connection1 = default(SqliteConnection);
+			SqliteConnection connection3 = default(SqliteConnection);
 			path = Application.streamingAssetsPath + "/" + "files/bd/" + db_name + ".sqlite";
 			//Копирование пустой бд в новый файл
 			if(!(File.Exists(path))) {
@@ -116,22 +129,18 @@ namespace MaxyGames.Generated {
 		}
 
 		/// <summary>
-		/// нифига не работает почему то, на большом количестве разных таблиц.
-		/// </summary>
-		public void sql_close() {}
-
-		/// <summary>
 		/// Получение списка таблиц в бд
-		/// Ненужен?
 		/// </summary>
 		private List<string> sql_master_tables(string db_name) {
 			List<string> tables1 = new List<string>();
 			SqliteCommand cmnd = default(SqliteCommand);
 			SqliteDataReader reader = default(SqliteDataReader);
 			SqliteConnection connection = new SqliteConnection();
+			string path1 = "";
 			tables1.Clear();
+			path1 = UnityEngine.Device.Application.streamingAssetsPath + "/" + "files/bd/" + db_name + ".sqlite";
 			if(sql_dbExists(db_name)) {
-				using(SqliteConnection value = new SqliteConnection("URI=file:" + path)) {
+				using(SqliteConnection value = new SqliteConnection("URI=file:" + path1)) {
 					connection = value;
 					connection.Open();
 					cmnd = connection.CreateCommand();
@@ -151,13 +160,35 @@ namespace MaxyGames.Generated {
 		private int sql_insertQ(string db_name, string q) {
 			int sql_writed = 0;
 			SqliteCommand cmnd1 = new SqliteCommand();
+			SqliteConnection connection1 = new SqliteConnection();
+			string path2 = "";
+			string q = "";
+			path2 = UnityEngine.Device.Application.streamingAssetsPath + "/" + "files/bd/" + db_name + ".sqlite";
+			if(sql_dbExists(db_name)) {
+				using(SqliteConnection value1 = new SqliteConnection("URI=file:" + path2)) {
+					connection1 = value1;
+					connection1.Open();
+					//перебор первой особой таблицы
+					foreach(KeyValuePair<string, string> loopObject3 in n1) {
+						//поиск совпадений ключей с текущим названием
+						if(loopObject3.Key.Contains(db_name)) {
+							using(SqliteCommand value2 = new SqliteConnection().CreateCommand()) {
+								cmnd1 = value2;
+								cmnd1.CommandText = q;
+								sql_writed = cmnd1.ExecuteReader().RecordsAffected;
+							}
+						}
+					}
+				}
+			}
+			return sql_writed;
 		}
 
 		/// <summary>
-		/// Получение списка таблиц в бд
+		/// Получение списка заголовков в бд
 		/// </summary>
 		private List<string> sql_headers(string db_name) {
-			SqliteCommand cmnd2 = new SqliteCommand();
+			SqliteCommand cmnd3 = new SqliteCommand();
 			SqliteDataReader reader1 = default(SqliteDataReader);
 		}
 
@@ -169,8 +200,8 @@ namespace MaxyGames.Generated {
 			HashSet<int> delim_hash_ints = new HashSet<int>();
 			rows_unparsed.Clear();
 			//Распилка
-			foreach(string loopObject2 in one_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.RemoveEmptyEntries)) {
-				rows_unparsed.Add(loopObject2);
+			foreach(string loopObject4 in one_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.RemoveEmptyEntries)) {
+				rows_unparsed.Add(loopObject4);
 			}
 			yield return new WaitForEndOfFrame();
 			//Разделители-столбцы
@@ -201,13 +232,11 @@ namespace MaxyGames.Generated {
 			string row_bd_name = "";
 			int row_from = 0;
 			int row_length = 0;
-			List<string> sql_row = new List<string>();
-			string sql_bd_name = "";
-			string sql_q = "";
+			string tmp_4sql_value = "";
 			yield return getDelims(one_table_data);
 			//построчная обработка
-			foreach(string loopObject3 in rows_unparsed) {
-				row_line = loopObject3;
+			foreach(string loopObject5 in rows_unparsed) {
+				row_line = loopObject5;
 				//Получение часа для строк (первая строчка)
 				if(Regex.IsMatch(row_line, "поясное.*\\((\\d+)\\D*(\\d+)")) {
 					row_1th = Regex.Match(row_line, "поясное.*\\((\\d+)\\D*(\\d+)", RegexOptions.None).Result("$1");
@@ -222,7 +251,7 @@ namespace MaxyGames.Generated {
 						row_cHour = row_2th;
 					}
 					//день месяца-первый столбец
-					row_parsed.Add(row_day.ToString());
+					tmp_4sql_value = "" + "y20" + Year + "_m" + Month + "_d" + row_day.ToString() + "_h" + row_cHour;
 					//основное тело распарса строки
 					for(int index3 = 0; index3 < (delimetrs.Count - 1); index3 += 1) {
 						row_from = delimetrs[index3];
@@ -231,35 +260,85 @@ namespace MaxyGames.Generated {
 						if((row_line.Length > row_from)) {
 							if((row_line.Length >= (row_from + row_length))) {
 								//Если совсем всё в порядке и вся ячейка что то имеет
-								row_parsed.Add(row_line.Substring(row_from, row_length).Trim());
+								tmp_4sql_value = tmp_4sql_value + "','" + row_line.Substring(row_from, row_length).Trim();
 							} else {
 								//Если нехватает символов в ячейке, но что то есть
-								row_parsed.Add(row_line.Substring(row_from, (row_line.Length - row_from)).Trim());
+								tmp_4sql_value = tmp_4sql_value + "','" + row_line.Substring(row_from, (row_line.Length - row_from)).Trim();
 							}
 						} else {
 							//если совсем ничего нету
-							row_parsed.Add("@");
+							tmp_4sql_value = tmp_4sql_value + "','" + "@";
 						}
 					}
 					//Проверка на неполную строчку. заполнение @
 					if((row_line.Length > delimetrs[delimetrs.Count - 1])) {
 						if((row_line.Length >= (delimetrs[delimetrs.Count - 1] + (row_line.Length - delimetrs[delimetrs.Count - 1])))) {
 							//last. если все символы на месте.
-							row_parsed.Add(row_line.Substring(delimetrs[delimetrs.Count - 1], (row_line.Length - delimetrs[delimetrs.Count - 1])).Trim());
+							tmp_4sql_value = tmp_4sql_value + "','" + row_line.Substring(delimetrs[delimetrs.Count - 1], (row_line.Length - delimetrs[delimetrs.Count - 1])).Trim();
 						} else {
 							//last. если нехватает некоторых символов
-							row_parsed.Add(row_line.Substring(delimetrs[delimetrs.Count - 1], (row_line.Length - delimetrs[delimetrs.Count - 1])).Trim());
+							tmp_4sql_value = tmp_4sql_value + "','" + row_line.Substring(delimetrs[delimetrs.Count - 1], (row_line.Length - delimetrs[delimetrs.Count - 1])).Trim();
 						}
 					} else {
-						//last. если ячейка совсем пустая
-						row_parsed.Add("@");
+						//если совсем ничего нету
+						tmp_4sql_value = tmp_4sql_value + "','" + "@";
 					}
-					//Добавление в Дикт.
-					n1.Add(NameOfDB + "&" + Year + "_" + Month + "_" + row_day.ToString() + "_" + row_cHour, row_parsed);
-					row_parsed = new List<string>();
+					if(n1.ContainsKey(tmp_4sql_value)) {
+						//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
+						Debug.Log("Ключ уже есть:" + tmp_4sql_value);
+					} else {
+						//Засовываем сразу почти готовую строчку для sql
+						n1.Add(NameOfDB + "&" + Year + "_" + Month + "_" + row_day.ToString() + "_" + row_cHour, tmp_4sql_value);
+					}
 				}
 			}
 			yield return new WaitForEndOfFrame();
+		}
+
+		/// <summary>
+		/// sql вставка n1 таблицы в файлы.
+		/// </summary>
+		private int n1_sql(string db_name) {
+			int sql_writed1 = 0;
+			SqliteCommand cmnd2 = new SqliteCommand();
+			SqliteConnection connection2 = new SqliteConnection();
+			string path3 = "";
+			string q1 = "";
+			int add_new = 0;
+			path3 = UnityEngine.Device.Application.streamingAssetsPath + "/" + "files/bd/" + db_name + ".sqlite";
+			if(sql_dbExists(db_name)) {
+				using(SqliteConnection value3 = new SqliteConnection("URI=file:" + path3)) {
+					connection2 = value3;
+					connection2.Open();
+					//перебор первой особой таблицы
+					foreach(string loopObject6 in Enumerable.ToList<System.String>(n1.Keys)) {
+						//поиск совпадений ключей с текущим названием
+						if(loopObject6.Contains(db_name)) {
+							q1 = "INSERT OR IGNORE INTO '" + "n1" + "' " + "" + " VALUES ('" + n1[loopObject6] + "" + "" + "')";
+							//Удаляет из библиотеки найденное и совпадённое
+							n1.Remove(loopObject6);
+							using(SqliteCommand value4 = connection2.CreateCommand()) {
+								cmnd2 = value4;
+								cmnd2.CommandText = q1;
+								add_new = cmnd2.ExecuteReader().RecordsAffected;
+								sql_writed1 = (add_new + sql_writed1);
+								if((add_new == 0)) {
+									//воткнуть проверку - на "такие же значения как в бд?"
+									Debug.Log("Повтор:" + db_name + "=" + q1);
+								}
+							}
+							cmnd2.Cancel();
+						}
+					}
+				}
+				//Пишет что база закрыта, но файл удалить не закрывая редактор всё равно не получается, что за фигня..
+				Debug.Log(connection2.State.ToString());
+				connection2 = null;
+				SqliteConnection.ClearAllPools();
+				System.GC.Collect();
+				System.GC.WaitForPendingFinalizers();
+			}
+			return sql_writed1;
 		}
 	}
 }
