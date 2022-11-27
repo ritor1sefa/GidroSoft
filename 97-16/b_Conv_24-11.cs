@@ -23,6 +23,9 @@ namespace MaxyGames.Generated {
 		public Dictionary<string, string> n1 = new Dictionary<string, string>();
 		public Dictionary<string, string> n2 = new Dictionary<string, string>();
 		public Dictionary<string, string> n3 = new Dictionary<string, string>();
+		public Dictionary<string, string> n4_1 = new Dictionary<string, string>();
+		public Dictionary<string, string> n4_2 = new Dictionary<string, string>();
+		public Dictionary<string, string> n4_3 = new Dictionary<string, string>();
 		public Dictionary<string, Dictionary<string, string>> listOfSimpleDicTables = new Dictionary<string, Dictionary<string, string>>();
 		public Dictionary<string, Dictionary<string, string>> listOfNamedDicTables = new Dictionary<string, Dictionary<string, string>>();
 		public GameObject objectVariable;
@@ -69,17 +72,23 @@ namespace MaxyGames.Generated {
 				objectVariable1.gameObject.GetComponent<TMPro.TMP_Text>().text = fPath;
 				objectVariable2.gameObject.GetComponent<TMPro.TMP_Text>().text = (index + 1).ToString();
 				yield return selector_loop(fPath);
-				Debug.Log("След файл");
+				Debug.Log("=След файл");
 			}
 			Debug.Log("Закончена обработка файлов.");
 			listOfSimpleDicTables.Clear();
+			listOfNamedDicTables.Clear();
 			listOfSimpleDicTables.Add("n1", n1);
 			listOfSimpleDicTables.Add("n2", n2);
-			listOfNamedDicTables.Clear();
+			listOfSimpleDicTables.Add("n4_1", n4_1);
+			//старая таблица скоростей ветров
+			listOfSimpleDicTables.Add("4", n4_2);
 			listOfNamedDicTables.Add("n3", n3);
 			//перебор названий постов-файлов бд
 			foreach(string loopObject1 in bd_names_array) {
+				yield return sql_simple(loopObject1);
 				yield return sql_named(loopObject1);
+				//временно? /эскиз
+				yield return n4_3(loopObject1);
 			}
 		}
 
@@ -107,17 +116,11 @@ namespace MaxyGames.Generated {
 				tables = Enumerable.ToList<System.String>(file_data.Trim().Split("Станция", System.StringSplitOptions.RemoveEmptyEntries));
 				foreach(string loopObject2 in tables) {
 					One_table_data = loopObject2;
-					if(One_table_data.Contains("Атм. давление,")) {
-						Debug.Log("=n1");
-						yield return n1(One_table_data);
-					} else if(One_table_data.Contains("С У Т О Ч Н Ы Е   Д А Н Н Ы Е")) {
-						Debug.Log("=n2");
-						yield return n2(One_table_data);
-					} else if(One_table_data.Contains("А Т М О С Ф Е Р Н Ы Е   Я В Л Е Н И Я")) {
-						Debug.Log("=n3");
-						yield return n3(One_table_data);
-					} else if(One_table_data.Contains("М Е С Я Ч Н Ы Е   В Ы В О Д Ы")) {
+					if(One_table_data.Contains("М Е С Я Ч Н Ы Е   В Ы В О Д Ы")) {
 						Debug.Log("М Е С Я Ч Н Ы Е   В Ы В О Д Ы");
+						yield return n4_1(One_table_data.TrimEnd().Substring(0, One_table_data.TrimEnd().IndexOf("Ч и с л о   с л у ч а е в   п о   г р а д а ц и я м")));
+						yield return n4_2(One_table_data.TrimEnd().Substring(One_table_data.TrimEnd().IndexOf("Ч и с л о   с л у ч а е в   п о   г р а д а ц и я м"), (One_table_data.TrimEnd().IndexOf("Число дней с осадками по градациям") - One_table_data.TrimEnd().IndexOf("Ч и с л о   с л у ч а е в   п о   г р а д а ц и я м"))));
+						yield return n4_3(One_table_data.TrimEnd().Substring(One_table_data.TrimEnd().IndexOf("Число дней с осадками по градациям")));
 					} else if(One_table_data.Contains("ТЕМПЕРАТУРА ПОЧВЫ НА ГЛУБ. ЗА СУТКИ, град")) {
 						Debug.Log("ТЕМПЕРАТУРА ПОЧВЫ НА ГЛУБ. ЗА СУТКИ, град");
 					} else if(One_table_data.Contains("СТИХИЙНЫЕ Г/М ЯВЛЕНИЯ, СНЕГОСЪЕМКИ, Г/И ОТЛОЖЕНИЯ")) {
@@ -212,8 +215,6 @@ namespace MaxyGames.Generated {
 			int row_dayPrev = 0;
 			bool row_2th_bool = false;
 			string row_cHour = "";
-			List<string> row_parsed = new List<string>();
-			string row_bd_name = "";
 			int row_from = 0;
 			int row_length = 0;
 			string tmp_4sql_value = "";
@@ -282,8 +283,6 @@ namespace MaxyGames.Generated {
 		public System.Collections.IEnumerator n2(string one_table_data) {
 			string row_line1 = "";
 			int row_day1 = 0;
-			List<string> row_parsed1 = new List<string>();
-			string row_bd_name1 = "";
 			int row_from1 = 0;
 			int row_length1 = 0;
 			string tmp_4sql_value1 = "";
@@ -342,7 +341,7 @@ namespace MaxyGames.Generated {
 		}
 
 		/// <summary>
-		/// sql вставка n1 таблицы в файлы.
+		/// sql вставка Simple таблиц в файлы.
 		/// </summary>
 		private System.Collections.IEnumerator sql_simple(string db_name) {
 			int sql_writed = 0;
@@ -397,7 +396,6 @@ namespace MaxyGames.Generated {
 			string row_line2 = "";
 			int row_day2 = 0;
 			int row_dayPrev1 = 0;
-			string row_bd_name2 = "";
 			int row_from2 = 0;
 			int row_length2 = 0;
 			string tmp_4sql_value2 = "";
@@ -445,7 +443,7 @@ namespace MaxyGames.Generated {
 		}
 
 		/// <summary>
-		/// sql вставка n1 таблицы в файлы.
+		/// sql вставка таблиц с выборочными столбцами в файлы.
 		/// </summary>
 		private System.Collections.IEnumerator sql_named(string db_name) {
 			int sql_writed1 = 0;
@@ -480,6 +478,10 @@ namespace MaxyGames.Generated {
 									cmnd2.CommandText = q1;
 									add_new1 = cmnd2.ExecuteReader().RecordsAffected;
 									sql_writed1 = (add_new1 + sql_writed1);
+									if((add_new1 == 0)) {
+										//воткнуть проверку - на "такие же значения как в бд?"
+										Debug.Log("Повтор:" + db_name + "=" + q1);
+									}
 								}
 								cmnd2.Cancel();
 							}
@@ -494,6 +496,177 @@ namespace MaxyGames.Generated {
 				System.GC.Collect();
 				System.GC.WaitForPendingFinalizers();
 			}
+		}
+
+		public System.Collections.IEnumerator n4_1(string one_table_data) {
+			string row_line3 = "";
+			int row_from3 = 0;
+			int row_length3 = 0;
+			string tmp_4sql_value3 = "";
+			yield return getDelims(one_table_data);
+			//построчная обработка
+			foreach(string loopObject12 in rows_unparsed) {
+				row_line3 = loopObject12;
+				//нужна только одна строчка
+				if(row_line3.Contains("Повт")) {
+					//день месяца-первый столбец
+					tmp_4sql_value3 = "" + "y20" + Year + "_m" + Month;
+					//основное тело распарса строки
+					for(int index5 = 0; index5 < (delimetrs.Count - 1); index5 += 2) {
+						row_from3 = delimetrs[index5];
+						row_length3 = (delimetrs[(index5 + 1)] - row_from3);
+						//Проверка на неполную строчку. заполнение @
+						if((row_line3.Length > row_from3)) {
+							if((row_line3.Length >= (row_from3 + row_length3))) {
+								//Если совсем всё в порядке и вся ячейка что то имеет
+								tmp_4sql_value3 = tmp_4sql_value3 + "','" + row_line3.Substring(row_from3, row_length3).Trim();
+							} else {
+								//Если нехватает символов в ячейке, но что то есть
+								tmp_4sql_value3 = tmp_4sql_value3 + "','" + row_line3.Substring(row_from3, (row_line3.Length - row_from3)).Trim();
+							}
+						} else {
+							//если совсем ничего нету
+							tmp_4sql_value3 = tmp_4sql_value3 + "','" + "@";
+						}
+					}
+					//Проверка на неполную строчку. заполнение @
+					if((row_line3.Length > delimetrs[delimetrs.Count - 1])) {
+						if((row_line3.Length >= (delimetrs[delimetrs.Count - 1] + (row_line3.Length - delimetrs[delimetrs.Count - 1])))) {
+							//last. если все символы на месте.
+							tmp_4sql_value3 = tmp_4sql_value3 + "','" + row_line3.Substring(delimetrs[delimetrs.Count - 1], (row_line3.Length - delimetrs[delimetrs.Count - 1])).Trim();
+						} else {
+							//last. если нехватает некоторых символов
+							tmp_4sql_value3 = tmp_4sql_value3 + "','" + row_line3.Substring(delimetrs[delimetrs.Count - 1], (row_line3.Length - delimetrs[delimetrs.Count - 1])).Trim();
+						}
+					} else {
+						//если совсем ничего нету
+						tmp_4sql_value3 = tmp_4sql_value3 + "','" + "@";
+					}
+					if(n4_1.ContainsKey(tmp_4sql_value3)) {
+						//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
+						Debug.Log("Ключ уже есть:" + tmp_4sql_value3);
+					} else {
+						//Засовываем сразу почти готовую строчку для sql
+						n4_1.Add(NameOfDB + "&" + Year + "_" + Month, tmp_4sql_value3);
+					}
+				}
+			}
+			yield return new WaitForEndOfFrame();
+		}
+
+		public System.Collections.IEnumerator n4_2(string one_table_data) {
+			string row_line4 = "";
+			int row_from4 = 0;
+			int row_length4 = 0;
+			string tmp_4sql_value4 = "";
+			yield return getDelims(one_table_data);
+			//построчная обработка
+			foreach(string loopObject13 in rows_unparsed) {
+				row_line4 = loopObject13;
+				//нужна только одна строчка
+				if(row_line4.Contains("проц")) {
+					//день месяца-первый столбец
+					tmp_4sql_value4 = "" + "y20" + Year + "_m" + Month + "','','','";
+					//основное тело распарса строки
+					for(int index6 = 0; index6 < 15; index6 += 1) {
+						row_from4 = delimetrs[index6];
+						row_length4 = (delimetrs[(index6 + 1)] - row_from4);
+						//Проверка на неполную строчку. заполнение @
+						if((row_line4.Length > row_from4)) {
+							if((row_line4.Length >= (row_from4 + row_length4))) {
+								//Если совсем всё в порядке и вся ячейка что то имеет
+								tmp_4sql_value4 = tmp_4sql_value4 + "','" + row_line4.Substring(row_from4, row_length4).Trim();
+							} else {
+								//Если нехватает символов в ячейке, но что то есть
+								tmp_4sql_value4 = tmp_4sql_value4 + "','" + row_line4.Substring(row_from4, (row_line4.Length - row_from4)).Trim();
+							}
+						} else {
+							//если совсем ничего нету
+							tmp_4sql_value4 = tmp_4sql_value4 + "','" + "@";
+						}
+					}
+					if(n4_2.ContainsKey(tmp_4sql_value4)) {
+						//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
+						Debug.Log("Ключ уже есть:" + tmp_4sql_value4);
+					} else {
+						//Засовываем сразу почти готовую строчку для sql
+						n4_2.Add(NameOfDB + "&" + Year + "_" + Month, tmp_4sql_value4);
+					}
+					break;
+				}
+			}
+			yield return new WaitForEndOfFrame();
+		}
+
+		public System.Collections.IEnumerator n4_3(string one_table_data) {
+			string row_line5 = "";
+			int row_day3 = 0;
+			int row_from5 = 0;
+			int row_length5 = 0;
+			string tmp_4sql_value5 = "";
+			List<int> tmp_delim = new List<int>() { 7, 13, 19, 25, 32, 38, 42, 46, 50, 54, 58, 62, 66, 70, 74, 80, 87, 92, 99, 106, 113, 116, 119, 122, 125 };
+			yield return getDelims(one_table_data);
+			delimetrs = tmp_delim;
+			//построчная обработка
+			foreach(string loopObject14 in rows_unparsed) {
+				row_line5 = loopObject14;
+				//только строчку с цифрами
+				if(Regex.IsMatch(row_line5, "^ *(\\d+)")) {
+					//день месяца-первый столбец
+					//и второй = первый из файла
+					tmp_4sql_value5 = "" + "y20" + Year + "_m" + Month + "','" + row_line5.Substring(0, delimetrs[0]).Trim();
+					//основное тело распарса строки
+					for(int index7 = 0; index7 < (delimetrs.Count - 1); index7 += 1) {
+						row_from5 = delimetrs[index7];
+						row_length5 = (delimetrs[(index7 + 1)] - row_from5);
+						//Проверка на неполную строчку. заполнение @
+						if((row_line5.Length > row_from5)) {
+							if((row_line5.Length >= (row_from5 + row_length5))) {
+								//Если совсем всё в порядке и вся ячейка что то имеет
+								tmp_4sql_value5 = tmp_4sql_value5 + "','" + row_line5.Substring(row_from5, row_length5).Trim();
+							} else {
+								//Если нехватает символов в ячейке, но что то есть
+								tmp_4sql_value5 = tmp_4sql_value5 + "','" + row_line5.Substring(row_from5, (row_line5.Length - row_from5)).Trim();
+							}
+						} else {
+							//если совсем ничего нету
+							tmp_4sql_value5 = tmp_4sql_value5 + "','" + "@";
+						}
+					}
+					//Проверка на неполную строчку. заполнение @
+					if((row_line5.Length > delimetrs[delimetrs.Count - 1])) {
+						if((row_line5.Length >= (delimetrs[delimetrs.Count - 1] + (row_line5.Length - delimetrs[delimetrs.Count - 1])))) {
+							//last. если все символы на месте.
+							tmp_4sql_value5 = tmp_4sql_value5 + "','" + row_line5.Substring(delimetrs[delimetrs.Count - 1], (row_line5.Length - delimetrs[delimetrs.Count - 1])).Trim();
+						} else {
+							//last. если нехватает некоторых символов
+							tmp_4sql_value5 = tmp_4sql_value5 + "','" + row_line5.Substring(delimetrs[delimetrs.Count - 1], (row_line5.Length - delimetrs[delimetrs.Count - 1])).Trim();
+						}
+					} else {
+						//если совсем ничего нету
+						tmp_4sql_value5 = tmp_4sql_value5 + "','" + "@";
+					}
+					Debug.Log(tmp_4sql_value5);
+					break;
+				}
+			}
+			yield return new WaitForEndOfFrame();
+		}
+
+		/// <summary>
+		/// sql вставка n4+ таблиц в файлы. 
+		/// (может получится в Named засунуть? врядли, проще тут разобрать)
+		/// </summary>
+		private System.Collections.IEnumerator sql_4_3_complex(string db_name) {
+			int sql_writed2 = 0;
+			SqliteCommand cmnd4 = new SqliteCommand();
+			SqliteConnection connection4 = new SqliteConnection();
+			string path4 = "";
+			string q3 = "";
+			int add_new2 = 0;
+			string t_key2 = "";
+			Dictionary<string, string> t_dic2 = new Dictionary<string, string>();
+			string Ntable2 = "";
 		}
 	}
 }
