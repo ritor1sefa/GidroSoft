@@ -30,7 +30,8 @@ namespace MaxyGames.Generated {
 
 		private void Update() {
 			if(Input.GetKeyUp(KeyCode.UpArrow)) {
-				Debug.Log(null);
+				//если это убрать, то parseRow2List яростно багует, но не всегда.. 
+				Debug.Log(new Regex("[^0-9.-]*").Replace("-0.02 │      │      │      │     -0│     0│    0 │      │    0 │      │ 3.20", ""));
 			}
 		}
 
@@ -112,8 +113,7 @@ namespace MaxyGames.Generated {
 						yield return n4_3(One_table_data.TrimEnd().Substring(One_table_data.TrimEnd().IndexOf("Число дней с осадками по градациям")));
 					} else if(One_table_data.Contains("ТЕМПЕРАТУРА ПОЧВЫ НА ГЛУБ. ЗА СУТКИ, град")) {
 						Debug.Log("ТЕМПЕРАТУРА ПОЧВЫ НА ГЛУБ. ЗА СУТКИ, град");
-					} else if(One_table_data.Contains("СТИХИЙНЫЕ Г/М ЯВЛЕНИЯ, СНЕГОСЪЕМКИ, Г/И ОТЛОЖЕНИЯ")) {
-						Debug.Log("СТИХИЙНЫЕ Г/М ЯВЛЕНИЯ, СНЕГОСЪЕМКИ, Г/И ОТЛОЖЕНИЯ");
+						yield return t20_21(One_table_data);
 					}
 				}
 			}
@@ -584,9 +584,6 @@ namespace MaxyGames.Generated {
 
 		public System.Collections.IEnumerator n4_3(string one_table_data) {
 			string row_line5 = "";
-			int row_day3 = 0;
-			int row_from5 = 0;
-			int row_length5 = 0;
 			string tmp_key5 = "";
 			List<int> tmp_delim = new List<int>() { 7, 13, 19, 25, 32, 38, 42, 46, 50, 54, 58, 62, 66, 70, 74, 80, 87, 92, 99, 106, 113, 116, 119, 122, 125, 34 };
 			List<string> tmp_values = new List<string>();
@@ -598,32 +595,7 @@ namespace MaxyGames.Generated {
 				row_line5 = loopObject12;
 				//только строчку с цифрами
 				if(Regex.IsMatch(row_line5, "^ *(\\d+)")) {
-					tmp_values.Add(row_line5.Substring(0, delimetrs[0]).Trim());
-					//основное тело распарса строки
-					for(int index7 = 0; index7 < (delimetrs.Count - 1); index7 += 1) {
-						row_from5 = delimetrs[index7];
-						row_length5 = (delimetrs[(index7 + 1)] - row_from5);
-						//Проверка на неполную строчку. заполнение @
-						if((row_line5.Length > row_from5)) {
-							if((row_line5.Length >= (row_from5 + row_length5))) {
-								tmp_values.Add(row_line5.Substring(row_from5, row_length5).Trim());
-							} else {
-								tmp_values.Add(row_line5.Substring(row_from5, (row_line5.Length - row_from5)).Trim());
-							}
-						} else {
-							tmp_values.Add("@");
-						}
-					}
-					//Проверка на неполную строчку. заполнение @
-					if((row_line5.Length > delimetrs[delimetrs.Count - 1])) {
-						if((row_line5.Length >= (delimetrs[delimetrs.Count - 1] + (row_line5.Length - delimetrs[delimetrs.Count - 1])))) {
-							tmp_values.Add(row_line5.Substring(delimetrs[delimetrs.Count - 1], (row_line5.Length - delimetrs[delimetrs.Count - 1])).Trim());
-						} else {
-							tmp_values.Add(row_line5.Substring(delimetrs[delimetrs.Count - 1], (row_line5.Length - delimetrs[delimetrs.Count - 1])).Trim());
-						}
-					} else {
-						tmp_values.Add("@");
-					}
+					tmp_values = parseRow2List(row_line5);
 					//set values for 7 table
 					tmp_key5 = NameOfDB + "&" + "7" + "&" + Year + "_" + Month;
 					if(simpleTables.ContainsKey(tmp_key5)) {
@@ -645,6 +617,109 @@ namespace MaxyGames.Generated {
 				}
 			}
 			yield return new WaitForEndOfFrame();
+		}
+
+		public System.Collections.IEnumerator t20_21(string one_table_data) {
+			string tmp_topT = "";
+			string tmp_bottomT = "";
+			string row_line6 = "";
+			List<string> tmp_mid = new List<string>();
+			List<string> tmp_max = new List<string>();
+			List<string> tmp_min = new List<string>();
+			List<string> tmp_frz = new List<string>();
+			string tmp_key6 = "";
+			string tmp_20_line = "";
+			string tmp_line_frz = "";
+			string tmp_21_line = "";
+			tmp_topT = One_table_data.TrimEnd().Substring(0, One_table_data.TrimEnd().IndexOf("Ч и с л о   д н е й   с   м о р о з о м"));
+			tmp_bottomT = One_table_data.TrimEnd().Substring(One_table_data.TrimEnd().IndexOf("Ч и с л о   д н е й   с   м о р о з о м"));
+			yield return getDelims(tmp_topT);
+			//построчная обработка
+			foreach(string loopObject13 in rows_unparsed) {
+				row_line6 = loopObject13;
+				//только строчку с цифрами
+				if(row_line6.Contains("Ср.мес")) {
+					tmp_mid = parseRow2List(row_line6);
+				} else //только строчку с цифрами
+				if(row_line6.Contains("Максим")) {
+					tmp_max = parseRow2List(row_line6);
+				} else //только строчку с цифрами
+				if(row_line6.Contains("Миним")) {
+					tmp_min = parseRow2List(row_line6);
+				}
+			}
+			yield return getDelims(tmp_bottomT);
+			//построчная обработка
+			foreach(string loopObject14 in rows_unparsed) {
+				row_line6 = loopObject14;
+				//только строчку с цифрами
+				if(row_line6.Contains("естественным покровом ")) {
+					tmp_frz = parseRow2List(row_line6);
+				}
+			}
+			//склеивание списков для 20 таблицы
+			for(int index7 = 1; index7 < 5; index7 += 1) {
+				tmp_20_line = tmp_20_line + "','" + tmp_mid[index7] + "','" + tmp_max[index7] + "','" + tmp_min[index7];
+			}
+			//set values for n20 table
+			tmp_key6 = NameOfDB + "&" + "20" + "&" + Year + "_" + Month;
+			if(simpleTables.ContainsKey(tmp_key6)) {
+				//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
+				Debug.Log("Ключ уже есть:" + tmp_key6);
+			} else {
+				simpleTables.Add(tmp_key6, "" + "y20" + Year + "_m" + Month + tmp_20_line);
+			}
+			//склеивание списков для 21 таблицы
+			for(int index8 = 9; index8 < 16; index8 += 1) {
+				tmp_21_line = tmp_21_line + "','" + tmp_mid[index8] + "','" + tmp_max[index8] + "','" + tmp_min[index8];
+			}
+			tmp_21_line = tmp_21_line + "','" + new Regex("[^0-9.,'-]*").Replace(string.Join<System.String>("','", tmp_frz), "");
+			//set values for n21 table
+			tmp_key6 = NameOfDB + "&" + "21" + "&" + Year + "_" + Month;
+			if(simpleTables.ContainsKey(tmp_key6)) {
+				//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
+				Debug.Log("Ключ уже есть:" + tmp_key6);
+			} else {
+				simpleTables.Add(tmp_key6, "" + "y20" + Year + "_m" + Month + tmp_21_line);
+			}
+			yield return new WaitForEndOfFrame();
+		}
+
+		public List<string> parseRow2List(string row) {
+			string row_line7 = "";
+			int row_from5 = 0;
+			int row_length5 = 0;
+			List<string> list2retrn = new List<string>();
+			Regex regex_clearCell = default(Regex);
+			regex_clearCell = new Regex("[║╟╦╢├┬┤│|I═=]*");
+			row_line7 = row;
+			list2retrn.Add(regex_clearCell.Replace(row_line7.Substring(0, delimetrs[0]), ""));
+			//основное тело распарса строки
+			for(int index9 = 0; index9 < (delimetrs.Count - 1); index9 += 1) {
+				row_from5 = delimetrs[index9];
+				row_length5 = (delimetrs[(index9 + 1)] - row_from5);
+				//Проверка на неполную строчку. заполнение @
+				if((row_line7.Length > row_from5)) {
+					if((row_line7.Length >= (row_from5 + row_length5))) {
+						list2retrn.Add(regex_clearCell.Replace(row_line7.Substring(row_from5, row_length5), ""));
+					} else {
+						list2retrn.Add(regex_clearCell.Replace(row_line7.Substring(row_from5, (row_line7.Length - row_from5)), ""));
+					}
+				} else {
+					list2retrn.Add("@");
+				}
+			}
+			//Проверка на неполную строчку. заполнение @
+			if((row_line7.Length > delimetrs[delimetrs.Count - 1])) {
+				if((row_line7.Length >= (delimetrs[delimetrs.Count - 1] + (row_line7.Length - delimetrs[delimetrs.Count - 1])))) {
+					list2retrn.Add(regex_clearCell.Replace(row_line7.Substring(delimetrs[delimetrs.Count - 1], (row_line7.Length - delimetrs[delimetrs.Count - 1])), ""));
+				} else {
+					list2retrn.Add(regex_clearCell.Replace(row_line7.Substring(delimetrs[delimetrs.Count - 1], (row_line7.Length - delimetrs[delimetrs.Count - 1])), ""));
+				}
+			} else {
+				list2retrn.Add("@");
+			}
+			return list2retrn;
 		}
 	}
 }
