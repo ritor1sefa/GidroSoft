@@ -66,6 +66,7 @@ namespace MaxyGames.Generated {
 				Debug.Log("=След файл");
 			}
 			Debug.Log("Закончена обработка файлов.");
+			yield return new WaitForEndOfFrame();
 			//перебор названий постов-файлов бд
 			foreach(string loopObject1 in bd_names_array) {
 				yield return sql_simple(loopObject1);
@@ -240,6 +241,10 @@ namespace MaxyGames.Generated {
 								cmnd1.CommandText = q;
 								add_new = cmnd1.ExecuteReader().RecordsAffected;
 								sql_writed = (add_new + sql_writed);
+								if((add_new == 0)) {
+									//воткнуть проверку - на "такие же значения как в бд?"
+									Debug.Log("Повтор:" + db_name + "=" + q);
+								}
 							}
 							cmnd1.Cancel();
 						}
@@ -288,6 +293,10 @@ namespace MaxyGames.Generated {
 								cmnd2.CommandText = q1;
 								add_new1 = cmnd2.ExecuteReader().RecordsAffected;
 								sql_writed1 = (add_new1 + sql_writed1);
+								if((add_new1 == 0)) {
+									//воткнуть проверку - на "такие же значения как в бд?"
+									Debug.Log("Повтор:" + db_name + "=" + q1);
+								}
 							}
 							cmnd2.Cancel();
 						}
