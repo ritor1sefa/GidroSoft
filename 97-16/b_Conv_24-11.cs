@@ -337,7 +337,7 @@ namespace MaxyGames.Generated {
 							}
 						} else {
 							//если совсем ничего нету
-							tmp_4sql_value = tmp_4sql_value + "','" + "@";
+							tmp_4sql_value = tmp_4sql_value + "','" + "";
 						}
 					}
 					//Проверка на неполную строчку. заполнение @
@@ -351,7 +351,7 @@ namespace MaxyGames.Generated {
 						}
 					} else {
 						//если совсем ничего нету
-						tmp_4sql_value = tmp_4sql_value + "','" + "@";
+						tmp_4sql_value = tmp_4sql_value + "','" + "";
 					}
 					tmp_key = NameOfDB + "&" + "n1" + "&" + "y20" + Year + "_m" + Month + "_d" + row_day.ToString() + "_h" + row_cHour;
 					if(simpleTables.ContainsKey(tmp_key)) {
@@ -399,7 +399,7 @@ namespace MaxyGames.Generated {
 							}
 						} else {
 							//если совсем ничего нету
-							tmp_4sql_value1 = tmp_4sql_value1 + "','" + "@";
+							tmp_4sql_value1 = tmp_4sql_value1 + "','" + "";
 						}
 					}
 					//Проверка на неполную строчку. заполнение @
@@ -413,7 +413,7 @@ namespace MaxyGames.Generated {
 						}
 					} else {
 						//если совсем ничего нету
-						tmp_4sql_value1 = tmp_4sql_value1 + "','" + "@";
+						tmp_4sql_value1 = tmp_4sql_value1 + "','" + "";
 					}
 					tmp_key1 = NameOfDB + "&n2&" + Year + "_" + Month + "_" + row_day1.ToString();
 					if(simpleTables.ContainsKey(tmp_key1)) {
@@ -437,7 +437,7 @@ namespace MaxyGames.Generated {
 			string tmp_key2 = "";
 			Dictionary<int, string> tmp_Allday = new Dictionary<int, string>();
 			string tmp_headers = "";
-			string tmp_values1 = "";
+			string tmp_values3 = "";
 			yield return getDelims(one_table_data);
 			//построчная обработка
 			foreach(string loopObject8 in rows_unparsed) {
@@ -507,7 +507,7 @@ namespace MaxyGames.Generated {
 							}
 						} else {
 							//если совсем ничего нету
-							tmp_4sql_value2 = tmp_4sql_value2 + "','" + "@";
+							tmp_4sql_value2 = tmp_4sql_value2 + "','" + "";
 						}
 					}
 					//Проверка на неполную строчку. заполнение @
@@ -521,7 +521,7 @@ namespace MaxyGames.Generated {
 						}
 					} else {
 						//если совсем ничего нету
-						tmp_4sql_value2 = tmp_4sql_value2 + "','" + "@";
+						tmp_4sql_value2 = tmp_4sql_value2 + "','" + "";
 					}
 					tmp_key3 = NameOfDB + "&n4_1&" + Year + "_" + Month;
 					if(simpleTables.ContainsKey(tmp_key3)) {
@@ -565,7 +565,7 @@ namespace MaxyGames.Generated {
 							}
 						} else {
 							//если совсем ничего нету
-							tmp_4sql_value3 = tmp_4sql_value3 + "','" + "@";
+							tmp_4sql_value3 = tmp_4sql_value3 + "','" + "";
 						}
 					}
 					tmp_key4 = NameOfDB + "&4&" + Year + "_" + Month;
@@ -685,39 +685,174 @@ namespace MaxyGames.Generated {
 			yield return new WaitForEndOfFrame();
 		}
 
-		public List<string> parseRow2List(string row) {
+		public System.Collections.IEnumerator t14(string one_table_data) {
 			string row_line7 = "";
+			List<string> tmp_values1 = new List<string>();
+			string tmp_key7 = "";
+			string tmp_key4DB = "";
+			string tmp_4sql_value4 = "";
+			yield return getDelims(one_table_data);
+			//построчная обработка
+			foreach(string loopObject15 in rows_unparsed) {
+				row_line7 = loopObject15;
+				//только строчку с цифрами
+				if(Regex.IsMatch(row_line7, "^[А-я ]+\\d")) {
+					tmp_values1 = parseRow2List(row_line7);
+					tmp_4sql_value4 = tmp_values1[1].Trim() + "','" + tmp_values1[2].Trim() + " " + tmp_values1[3].Trim() + "','" + tmp_values1[4].Trim() + "','" + tmp_values1[5].Trim() + " " + tmp_values1[6].Trim() + "','" + tmp_values1[7].Trim() + "','" + tmp_values1[0].Trim() + "','" + tmp_values1[8].Trim() + "','" + tmp_values1[9].Trim();
+					tmp_key4DB = new Regex("[',]*").Replace(tmp_4sql_value4, "");
+					//set values for n21 table
+					tmp_key7 = NameOfDB + "&" + "14" + "&" + Year + "_" + Month + "_k" + tmp_key4DB;
+					if(simpleTables.ContainsKey(tmp_key7)) {
+						//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
+						Debug.Log("Ключ уже есть:" + tmp_key7);
+					} else {
+						simpleTables.Add(tmp_key7, "" + "y20" + Year + "_m" + Month + "_k" + tmp_key4DB + "','" + tmp_4sql_value4);
+					}
+				}
+			}
+			yield return new WaitForEndOfFrame();
+		}
+
+		public System.Collections.IEnumerator t16(string one_table_data) {
+			string row_line8 = "";
+			List<string> tmp_values2 = new List<string>();
+			string tmp_key8 = "";
+			string tmp_4sql_value5 = "";
+			string tmp_key4DB1 = "";
+			yield return getDelims(one_table_data);
+			//построчная обработка
+			foreach(string loopObject16 in rows_unparsed) {
+				row_line8 = loopObject16;
+				//только строчку с цифрами
+				if(Regex.IsMatch(row_line8, "^[А-я ]+\\d")) {
+					tmp_values2 = parseRow2List(row_line8);
+					tmp_4sql_value5 = new Regex("[ ]*").Replace("','','','','','" + string.Join<System.String>("','", tmp_values2), "");
+					tmp_key4DB1 = new Regex("[',]*").Replace(tmp_4sql_value5, "");
+					//set values for 7 table
+					tmp_key8 = NameOfDB + "&" + "16" + "&" + Year + "_" + Month + "_k" + tmp_key4DB1;
+					if(simpleTables.ContainsKey(tmp_key8)) {
+						//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
+						Debug.Log("Ключ уже есть:" + tmp_key8);
+					} else {
+						//Засовываем сразу почти готовую строчку для sql
+						simpleTables.Add(tmp_key8, "" + "y20" + Year + "_m" + Month + "_k" + tmp_key4DB1 + "','" + tmp_4sql_value5);
+					}
+				}
+			}
+			yield return new WaitForEndOfFrame();
+		}
+
+		public System.Collections.IEnumerator t22(string one_table_data) {
+			string c_row_line = "";
+			string c_newTable = "";
+			List<string> tmp_newTable = new List<string>();
+			List<string> row_parsed = new List<string>();
+			int cell_tmp = 0;
+			int cell_6th = 0;
+			int cell_7th = 0;
+			List<List<string>> final_row = new List<List<string>>();
+			List<string> last_list_row = new List<string>();
+			string tmp_key9 = "";
+			string tmp_key4DB2 = "";
+			string tmp_4sql_value6 = "";
+			yield return getDelims(one_table_data);
+			tmp_newTable = new List<string>();
+			//построчная обработка
+			foreach(string loopObject17 in rows_unparsed) {
+				c_row_line = loopObject17;
+				//новый список строк. чистый
+				if(!((((c_row_line.Contains("ГОЛОЛЕДНО") || string.IsNullOrWhiteSpace(c_row_line)) || Regex.IsMatch(c_row_line, "[║╟╦╢├┬┤│|I═=]")) || c_row_line.Contains("Переход")))) {
+					tmp_newTable.Add(c_row_line);
+				}
+			}
+			final_row = new List<List<string>>();
+			//построчная обработка
+			foreach(string loopObject18 in tmp_newTable) {
+				row_parsed = parseRow2List(loopObject18);
+				if(string.IsNullOrWhiteSpace(row_parsed[0].Trim())) {
+					//Если строчка начинается с пустоты=продолжение предыдущей
+					if(int.TryParse(row_parsed[6], out cell_tmp)) {
+						//6й стобец
+						if((cell_6th < cell_tmp)) {
+							cell_6th = cell_tmp;
+							final_row[final_row.Count - 1][6] = cell_6th.ToString();
+						}
+					} else {
+						Debug.Log("6й столбей не парсанулся! " + row_parsed[6]);
+					}
+					//Если строчка начинается с пустоты=продолжение предыдущей
+					if(int.TryParse(row_parsed[7], out cell_tmp)) {
+						//7й столбец
+						if((cell_7th < cell_tmp)) {
+							cell_7th = cell_tmp;
+							final_row[final_row.Count - 1][7] = cell_7th.ToString();
+						}
+					} else {
+						Debug.Log("7й столбей не парсанулся! " + row_parsed[7]);
+					}
+				} else {
+					int.TryParse(row_parsed[6], out cell_6th);
+					int.TryParse(row_parsed[7], out cell_7th);
+					final_row.Add(row_parsed);
+				}
+			}
+			yield return new WaitForEndOfFrame();
+			//формирование строк для/в dict`s
+			foreach(List<string> loopObject19 in final_row) {
+				last_list_row = loopObject19;
+				last_list_row.RemoveAt(0);
+				//Поднимаем буквы, потому что в другом наборе данных - они почему то подняты.
+				last_list_row[0] = last_list_row[0].ToUpper();
+				//магия.. убирания лишних пробелов
+				tmp_4sql_value6 = string.Join("','", Enumerable.Select<System.String, System.String>(last_list_row, (string parameterValues) => {
+					return parameterValues.Trim();
+				}));
+				tmp_key4DB2 = new Regex("[',]*").Replace(tmp_4sql_value6, "");
+				//set values for n22 table
+				tmp_key9 = NameOfDB + "&" + "22" + "&" + Year + "_" + Month + "_k" + tmp_key4DB2;
+				if(simpleTables.ContainsKey(tmp_key9)) {
+					//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
+					Debug.Log("Ключ уже есть:" + tmp_key9);
+				} else {
+					simpleTables.Add(tmp_key9, "" + "y20" + Year + "_m" + Month + "_k" + tmp_key4DB2 + "','" + tmp_4sql_value6);
+				}
+			}
+			yield return new WaitForEndOfFrame();
+		}
+
+		public List<string> parseRow2List(string row) {
+			string row_line9 = "";
 			int row_from5 = 0;
 			int row_length5 = 0;
 			List<string> list2retrn = new List<string>();
 			Regex regex_clearCell = default(Regex);
 			regex_clearCell = new Regex("[║╟╦╢├┬┤│|I═=]*");
-			row_line7 = row;
-			list2retrn.Add(regex_clearCell.Replace(row_line7.Substring(0, delimetrs[0]), ""));
+			row_line9 = row;
+			list2retrn.Add(regex_clearCell.Replace(row_line9.Substring(0, delimetrs[0]), ""));
 			//основное тело распарса строки
 			for(int index9 = 0; index9 < (delimetrs.Count - 1); index9 += 1) {
 				row_from5 = delimetrs[index9];
 				row_length5 = (delimetrs[(index9 + 1)] - row_from5);
 				//Проверка на неполную строчку. заполнение @
-				if((row_line7.Length > row_from5)) {
-					if((row_line7.Length >= (row_from5 + row_length5))) {
-						list2retrn.Add(regex_clearCell.Replace(row_line7.Substring(row_from5, row_length5), ""));
+				if((row_line9.Length > row_from5)) {
+					if((row_line9.Length >= (row_from5 + row_length5))) {
+						list2retrn.Add(regex_clearCell.Replace(row_line9.Substring(row_from5, row_length5), ""));
 					} else {
-						list2retrn.Add(regex_clearCell.Replace(row_line7.Substring(row_from5, (row_line7.Length - row_from5)), ""));
+						list2retrn.Add(regex_clearCell.Replace(row_line9.Substring(row_from5, (row_line9.Length - row_from5)), ""));
 					}
 				} else {
-					list2retrn.Add("@");
+					list2retrn.Add("");
 				}
 			}
 			//Проверка на неполную строчку. заполнение @
-			if((row_line7.Length > delimetrs[delimetrs.Count - 1])) {
-				if((row_line7.Length >= (delimetrs[delimetrs.Count - 1] + (row_line7.Length - delimetrs[delimetrs.Count - 1])))) {
-					list2retrn.Add(regex_clearCell.Replace(row_line7.Substring(delimetrs[delimetrs.Count - 1], (row_line7.Length - delimetrs[delimetrs.Count - 1])), ""));
+			if((row_line9.Length > delimetrs[delimetrs.Count - 1])) {
+				if((row_line9.Length >= (delimetrs[delimetrs.Count - 1] + (row_line9.Length - delimetrs[delimetrs.Count - 1])))) {
+					list2retrn.Add(regex_clearCell.Replace(row_line9.Substring(delimetrs[delimetrs.Count - 1], (row_line9.Length - delimetrs[delimetrs.Count - 1])), ""));
 				} else {
-					list2retrn.Add(regex_clearCell.Replace(row_line7.Substring(delimetrs[delimetrs.Count - 1], (row_line7.Length - delimetrs[delimetrs.Count - 1])), ""));
+					list2retrn.Add(regex_clearCell.Replace(row_line9.Substring(delimetrs[delimetrs.Count - 1], (row_line9.Length - delimetrs[delimetrs.Count - 1])), ""));
 				}
 			} else {
-				list2retrn.Add("@");
+				list2retrn.Add("");
 			}
 			return list2retrn;
 		}
