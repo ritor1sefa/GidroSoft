@@ -93,7 +93,7 @@ namespace MaxyGames.Generated {
 					//Добавление имени бд для последующего sql инжекта
 					bd_names_array.Add(NameOfDB);
 				}
-				file_data = File.ReadAllText(path);
+				file_data = new Regex("^(.*.*).+$", RegexOptions.Multiline).Replace(File.ReadAllText(path), "");
 				tables = Enumerable.ToList<System.String>(file_data.Trim().Split("Станция", System.StringSplitOptions.RemoveEmptyEntries));
 				foreach(string loopObject2 in tables) {
 					One_table_data = loopObject2;
@@ -112,8 +112,20 @@ namespace MaxyGames.Generated {
 						yield return n4_2(One_table_data.TrimEnd().Substring(One_table_data.TrimEnd().IndexOf("Ч и с л о   с л у ч а е в   п о   г р а д а ц и я м"), (One_table_data.TrimEnd().IndexOf("Число дней с осадками по градациям") - One_table_data.TrimEnd().IndexOf("Ч и с л о   с л у ч а е в   п о   г р а д а ц и я м"))));
 						yield return n4_3(One_table_data.TrimEnd().Substring(One_table_data.TrimEnd().IndexOf("Число дней с осадками по градациям")));
 					} else if(One_table_data.Contains("ТЕМПЕРАТУРА ПОЧВЫ НА ГЛУБ. ЗА СУТКИ, град")) {
-						Debug.Log("ТЕМПЕРАТУРА ПОЧВЫ НА ГЛУБ. ЗА СУТКИ, град");
+						Debug.Log("=20-21=ТЕМПЕРАТУРА ПОЧВЫ НА ГЛУБ. ЗА СУТКИ, град");
 						yield return t20_21(One_table_data);
+					} else if(One_table_data.Contains("Г/М ЯВЛЕНИЯ")) {
+						Debug.Log("Г/М ЯВЛЕНИЯ, СНЕГОСЪЕМКИ, Г/И ОТЛОЖЕНИЯ");
+						if(One_table_data.Contains("Вид явления")) {
+							Debug.Log("=14=СТИХИЙНЫЕ Г/М ЯВЛЕНИЯ");
+							yield return t14(One_table_data.Substring(0, One_table_data.IndexOf("К о н е ц   т а б л и ц ы   с   д а н н ы м и   о б   О Я")));
+						} else if(One_table_data.Contains("Маршрут")) {
+							Debug.Log("=16=С Н Е Ж Н Ы Й   П О К Р О В");
+							yield return t16(One_table_data.Substring(One_table_data.IndexOf("С Н Е Ж Н Ы Й   П О К Р О В"), (One_table_data.IndexOf(" К о н е ц   т а б л и ц ы   с   р е з у л ь т а т а м и   с н е г о с ъ е м о к") - One_table_data.IndexOf("С Н Е Ж Н Ы Й   П О К Р О В"))));
+						} else if(One_table_data.Contains("ГОЛОЛЕДНО-ИЗМОРОЗЕВЫМИ  ОТЛОЖЕНИЯМИ")) {
+							Debug.Log("=22=ГОЛОЛЕДНО-ИЗМОРОЗЕВЫМИ  ОТЛОЖЕНИЯМИ");
+							yield return t22(One_table_data.Substring(One_table_data.IndexOf("ГОЛОЛЕДНО-ИЗМОРОЗЕВЫМИ  ОТЛОЖЕНИЯМИ"), (One_table_data.IndexOf("Конец таблицы с результатами наблюдений за г/и отложениями") - One_table_data.IndexOf("ГОЛОЛЕДНО-ИЗМОРОЗЕВЫМИ  ОТЛОЖЕНИЯМИ"))));
+						}
 					}
 				}
 			}
