@@ -22,6 +22,7 @@ namespace MaxyGames.Generated {
 		public string Month = "";
 		public Dictionary<string, string> simpleTables = new Dictionary<string, string>();
 		public Dictionary<string, string> namedTables = new Dictionary<string, string>();
+		public string wet_cor_m = "";
 		public GameObject objectVariable;
 		public GameObject objectVariable1;
 		public GameObject objectVariable2;
@@ -97,7 +98,20 @@ namespace MaxyGames.Generated {
 				file_data = new Regex("^(.*.*).+$", RegexOptions.Multiline).Replace(File.ReadAllText(path), "");
 				//Если есть - то это короткий файл, и пост к тому же
 				if(file_data.Contains("Т А Б Л И Ц Ы    М Е Т Е О Р О Л О Г И Ч Е С К И Х   Н А Б Л Ю Д Е Н И Й")) {
-					Debug.Log("Т М П");
+					Debug.Log("Т М Н");
+					wet_cor_m = "";
+					//"ВСЕМИРНОЕ"==длинный вариант ТМН. Если нет == короткий
+					if(file_data.Contains("ВСЕМИРНОЕ")) {
+						if(Regex.IsMatch(file_data, "участка:.+\\|\\s+(\\S+)\\s+\\|")) {
+							wet_cor_m = new Regex("участка:.+\\|\\s+(\\S+)\\s+\\|", RegexOptions.Multiline).Match(file_data).Result("$1");
+						} else {
+							Debug.Log("2Поправки на смачивание нету!");
+						}
+					} else if(Regex.IsMatch(file_data, "Месяц\\s*(\\S+)\\s*мм")) {
+						wet_cor_m = new Regex("Месяц\\s*(\\S+)\\s*мм", RegexOptions.Multiline).Match(file_data).Result("$1");
+					} else {
+						Debug.Log("1Поправки на смачивание нету!");
+					}
 					//Склеивание таблицы в один столбец
 					One_table_data = mergeTable(file_data.Substring(file_data.IndexOfAny(new char[] { '═', '=' }), (file_data.IndexOf("УСЛОВНЫЕ ОБОЗНАЧЕНИЯ АТМОСФЕРНЫХ ЯВЛЕНИЙ") - file_data.IndexOfAny(new char[] { '═', '=' }))));
 					//Смешанная таблица (та что слева)
@@ -105,11 +119,11 @@ namespace MaxyGames.Generated {
 					//Температура воздуха, градусы
 					yield return TMN_t1_t16(One_table_data.Substring((One_table_data.IndexOf("Температура воздуха, градусы") - 20), (One_table_data.IndexOf("КОЛИЧЕСТВО ОСАДКОВ, ММ") - One_table_data.IndexOf("Температура воздуха, градусы"))));
 					//КОЛИЧЕСТВО ОСАДКОВ, ММ
-					yield return One_table_data.Substring(One_table_data.IndexOf("КОЛИЧЕСТВО ОСАДКОВ, ММ"), (One_table_data.IndexOf("ЧИСЛО ДНЕЙ С ОСАДКАМИ ПО ГРАДАЦИЯ") - One_table_data.IndexOf("КОЛИЧЕСТВО ОСАДКОВ, ММ")));
+					yield return TMN_t7_1(One_table_data.Substring(One_table_data.IndexOf("КОЛИЧЕСТВО ОСАДКОВ, ММ"), (One_table_data.IndexOf("ЧИСЛО ДНЕЙ С ОСАДКАМИ ПО ГРАДАЦИЯ") - One_table_data.IndexOf("КОЛИЧЕСТВО ОСАДКОВ, ММ"))));
 					//ЧИСЛО ДНЕЙ С ОСАДКАМИ ПО ГРАДАЦИЯ
-					yield return One_table_data.Substring(One_table_data.IndexOf("ЧИСЛО ДНЕЙ С ОСАДКАМИ ПО ГРАДАЦИЯ"), (One_table_data.IndexOf("С атмосферными явлениями") - One_table_data.IndexOf("ЧИСЛО ДНЕЙ С ОСАДКАМИ ПО ГРАДАЦИЯ")));
+					yield return TMN_t7_2(One_table_data.Substring(One_table_data.IndexOf("ЧИСЛО ДНЕЙ С ОСАДКАМИ ПО ГРАДАЦИЯ"), (One_table_data.IndexOf("С атмосферными явлениями") - One_table_data.IndexOf("ЧИСЛО ДНЕЙ С ОСАДКАМИ ПО ГРАДАЦИЯ"))));
 					//С атмосферными явлениями
-					yield return One_table_data.Substring(One_table_data.IndexOf("С атмосферными явлениями"));
+					yield return TMN_t11(One_table_data.Substring((One_table_data.IndexOf("С атмосферными явлениями") - 20)));
 					//ОЯ, снег
 					One_table_data = file_data.Substring(file_data.IndexOf("УСЛОВНЫЕ ОБОЗНАЧЕНИЯ АТМОСФЕРНЫХ ЯВЛЕНИЙ"), (file_data.Length - file_data.IndexOf("УСЛОВНЫЕ ОБОЗНАЧЕНИЯ АТМОСФЕРНЫХ ЯВЛЕНИЙ")));
 					if(One_table_data.Contains("Г/М ЯВЛЕНИЯ")) {
@@ -326,7 +340,7 @@ namespace MaxyGames.Generated {
 							cmnd1.Cancel();
 						}
 					}
-					Debug.Log("Файл=" + t_key + "=" + "" + "" + "=внесено=" + sql_writed.ToString());
+					Debug.Log("Simple" + "=внесено=" + sql_writed.ToString());
 				}
 				//Пишет что база закрыта, но файл удалить не закрывая редактор всё равно не получается, что за фигня..
 				Debug.Log(connection1.State.ToString());
@@ -378,7 +392,7 @@ namespace MaxyGames.Generated {
 							cmnd2.Cancel();
 						}
 					}
-					Debug.Log("Файл=" + t_key1 + "=" + "" + "" + "=внесено=" + sql_writed1.ToString());
+					Debug.Log("Named" + "=внесено=" + sql_writed1.ToString());
 				}
 				//Пишет что база закрыта, но файл удалить не закрывая редактор всё равно не получается, что за фигня..
 				Debug.Log(connection2.State.ToString());
@@ -544,7 +558,7 @@ namespace MaxyGames.Generated {
 			string tmp_key2 = "";
 			Dictionary<int, string> tmp_Allday = new Dictionary<int, string>();
 			string tmp_headers = "";
-			string tmp_values5 = "";
+			string tmp_values8 = "";
 			yield return getDelims(one_table_data);
 			//построчная обработка
 			foreach(string loopObject9 in rows_unparsed) {
@@ -993,7 +1007,7 @@ namespace MaxyGames.Generated {
 						return parameterValues2.Trim();
 					})) + "'";
 					//4n2
-					//set values for n21 table
+					//set values for n2 table
 					tmp_key10 = NameOfDB + "&" + "n2" + "&" + Year + "_" + Month + "_" + day;
 					if(namedTables.ContainsKey(tmp_key10)) {
 						//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
@@ -1002,7 +1016,7 @@ namespace MaxyGames.Generated {
 						namedTables.Add(tmp_key10, "'Year_Month_Day'," + "'t_Возд_макс','t_Возд_мин','ОсадСутки_Ночь','ОсадСутки_День','ОсадСутки_Сумма','СнПокров_ст.покр','СнПокров_высота_см'" + "&" + "'" + "y20" + Year + "_m" + Month + "_d" + day + "'," + toN2TableValue);
 					}
 					//4n3
-					//set values for n21 table
+					//set values for n3 table
 					tmp_key10 = NameOfDB + "&" + "n3" + "&" + Year + "_" + Month + "_" + day;
 					if(namedTables.ContainsKey(tmp_key10)) {
 						//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
@@ -1034,7 +1048,6 @@ namespace MaxyGames.Generated {
 					tmp_values4 = parseRow2List(row_line10);
 					//только строчку с цифрами
 					if(Regex.IsMatch(row_line10, "^ *(\\d+)")) {
-						tmp_values4 = parseRow2List(row_line10);
 						switch(int.Parse(tmp_values4[0])) {
 							case 1: {
 								toT16TableValue = "'ИзменитьВручнуюТип','" + tmp_values4[7].Trim() + "','";
@@ -1049,12 +1062,28 @@ namespace MaxyGames.Generated {
 							}
 							break;
 						}
+					} else {
+						//строчка с месяцем - для первой таблицы
+						if(row_line10.Contains("Мес")) {
+							toT1TableValue = "'" + string.Join("','", Enumerable.Select<System.String, System.String>(tmp_values4.GetRange(1, 6), (string parameterValues3) => {
+								return parameterValues3.Trim();
+							})) + "'";
+							//4t1
+							//set values for t1 table
+							tmp_key11 = NameOfDB + "&" + "1" + "&" + Year + "_" + Month;
+							if(namedTables.ContainsKey(tmp_key11)) {
+								//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
+								Debug.Log("Ключ уже есть:" + tmp_key11);
+							} else {
+								namedTables.Add(tmp_key11, "'N_year_N_month'," + "'tV_mid_max','tV_mid_min','tV_abs_max','tV_abs_max_day','tV_abs_min','tV_abs_min_day'" + "&" + "'" + "y20" + Year + "_m" + Month + "'," + toT1TableValue);
+							}
+						}
 					}
 				}
 			}
 			if((toT16TableValue.Length > 0)) {
 				//4t16
-				//set values for n21 table
+				//set values for t16 table
 				tmp_key11 = NameOfDB + "&" + "16" + "&" + Year + "_" + Month + "_null";
 				if(namedTables.ContainsKey(tmp_key11)) {
 					//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
@@ -1067,38 +1096,153 @@ namespace MaxyGames.Generated {
 		}
 
 		/// <summary>
+		/// TMN =Т А Б Л И Ц Ы    М Е Т Е О Р О Л О Г И Ч Е С К И Х   Н А Б Л Ю Д Е Н И Й 
+		/// Для таблицы7. первая половина
+		/// </summary>
+		public System.Collections.IEnumerator TMN_t7_1(string one_table_data) {
+			string row_line11 = "";
+			List<string> tmp_values5 = new List<string>();
+			string tmp_key12 = "";
+			string tmp_key4DB5 = "";
+			string toT7TableValue = "";
+			yield return getDelims(one_table_data);
+			//построчная обработка
+			foreach(string loopObject24 in rows_unparsed) {
+				row_line11 = loopObject24;
+				//игнорим шапку
+				if(!((row_line11.IndexOfAny(new char[] { '|', 'н' }) > -1))) {
+					//только строчку с цифрами
+					if(Regex.IsMatch(row_line11, "^ *(\\d+)")) {
+						tmp_values5 = parseRow2List(row_line11);
+						//Добавляем поправку на смачивание, полученную сильно выше
+						toT7TableValue = "'" + string.Join("','", Enumerable.Select<System.String, System.String>(tmp_values5.GetRange(3, 5), (string parameterValues4) => {
+							return parameterValues4.Trim();
+						})) + "','" + wet_cor_m + "'";
+						//4t1
+						//set values for t7_1 table
+						tmp_key12 = NameOfDB + "&" + "7" + "&" + Year + "_" + Month;
+						if(namedTables.ContainsKey(tmp_key12)) {
+							//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
+							Debug.Log("Ключ уже есть:" + tmp_key12);
+						} else {
+							//засовываем полный список столбцов. вторую половину данных в следующей функции-таблице
+							namedTables.Add(tmp_key12, "'N_year_N_month'," + "'rnfl_nightTime','rnfl_dayTime','rnfl_summ','rnfl_maxByDay','rnfl_day','tt_wet_corr','RD_00','RD_01','RD_05','RD_1','RD_5','RD_10','RD_20','RD_30','RD_50','RD_80','RD_120'" + "&" + "'" + "y20" + Year + "_m" + Month + "'," + toT7TableValue);
+						}
+					}
+				}
+			}
+			yield return new WaitForEndOfFrame();
+		}
+
+		/// <summary>
+		/// TMN =Т А Б Л И Ц Ы    М Е Т Е О Р О Л О Г И Ч Е С К И Х   Н А Б Л Ю Д Е Н И Й 
+		/// Для таблицы7. вторая половина
+		/// </summary>
+		public System.Collections.IEnumerator TMN_t7_2(string one_table_data) {
+			string row_line12 = "";
+			List<string> tmp_values6 = new List<string>();
+			string tmp_key13 = "";
+			string tmp_key4DB6 = "";
+			string toT7TableValue1 = "";
+			yield return getDelims(one_table_data);
+			//построчная обработка
+			foreach(string loopObject25 in rows_unparsed) {
+				row_line12 = loopObject25;
+				//игнорим шапку
+				if(!((row_line12.IndexOfAny(new char[] { '|', 'н' }) > -1))) {
+					//только строчку с цифрами
+					if(Regex.IsMatch(row_line12, "^ *(\\d+)")) {
+						tmp_values6 = parseRow2List(row_line12);
+						toT7TableValue1 = "'" + string.Join("','", Enumerable.Select<System.String, System.String>(tmp_values6, (string parameterValues5) => {
+							return parameterValues5.Trim();
+						})) + "'";
+						//4t1
+						//set values for t7_2 table
+						tmp_key13 = NameOfDB + "&" + "7" + "&" + Year + "_" + Month;
+						if(namedTables.ContainsKey(tmp_key13)) {
+							namedTables[tmp_key13] = namedTables[tmp_key13] + "," + toT7TableValue1;
+						} else {
+							//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
+							Debug.Log("Первой половины 7й таблицы нету! О_о" + tmp_key13);
+						}
+					}
+				}
+			}
+			yield return new WaitForEndOfFrame();
+		}
+
+		/// <summary>
+		/// TMN =Т А Б Л И Ц Ы    М Е Т Е О Р О Л О Г И Ч Е С К И Х   Н А Б Л Ю Д Е Н И Й 
+		/// Для таблицы11
+		/// АТМОСФЕРНЫЕ  ЯВЛЕНИЯ,  ЧИСЛО  ДНЕЙ 
+		/// </summary>
+		public System.Collections.IEnumerator TMN_t11(string one_table_data) {
+			string row_line13 = "";
+			List<string> tmp_values7 = new List<string>();
+			string tmp_key14 = "";
+			string tmp_key4DB7 = "";
+			string toT11TableValue = "";
+			yield return getDelims(one_table_data);
+			//построчная обработка
+			foreach(string loopObject26 in rows_unparsed) {
+				row_line13 = loopObject26;
+				//игнорим шапку
+				if(!((row_line13.IndexOfAny(new char[] { '|', 'д', '=', '-' }) > -1))) {
+					//только строчку с цифрами
+					if(Regex.IsMatch(row_line13, "^ *(\\d+)")) {
+						tmp_values7 = parseRow2List(row_line13);
+						toT11TableValue = "'" + string.Join("','", Enumerable.Select<System.String, System.String>(tmp_values7.GetRange(0, 9), (string parameterValues6) => {
+							return parameterValues6.Trim();
+						})) + "'";
+						//4t1
+						//set values for t11 table
+						tmp_key14 = NameOfDB + "&" + "11" + "&" + Year + "_" + Month;
+						if(namedTables.ContainsKey(tmp_key14)) {
+							//Если ключ есть. Возможно воткнуть сюда потом генерацию альтернативы, в этом случае
+							Debug.Log("Ключ уже есть:" + tmp_key14);
+						} else {
+							//засовываем полный список столбцов. вторую половину данных в следующей функции-таблице
+							namedTables.Add(tmp_key14, "'Year_Month_Day'," + "'ДЖ','С','СМ','ТТ','ИЗМ','ГЛ','ММ','ГД','Г'" + "&" + "'" + "y20" + Year + "_m" + Month + "'," + toT11TableValue);
+						}
+					}
+				}
+			}
+			yield return new WaitForEndOfFrame();
+		}
+
+		/// <summary>
 		/// parseRow2List
 		/// </summary>
 		public List<string> parseRow2List(string row) {
-			string row_line11 = "";
+			string row_line14 = "";
 			int row_from5 = 0;
 			int row_length5 = 0;
 			List<string> list2retrn = new List<string>();
 			Regex regex_clearCell = default(Regex);
 			regex_clearCell = new Regex("[║╟╦╢├┬┤│|I═=]*");
-			row_line11 = row;
-			list2retrn.Add(regex_clearCell.Replace(row_line11.Substring(0, delimetrs[0]), ""));
+			row_line14 = row;
+			list2retrn.Add(regex_clearCell.Replace(row_line14.Substring(0, delimetrs[0]), ""));
 			//основное тело распарса строки
 			for(int index9 = 0; index9 < (delimetrs.Count - 1); index9 += 1) {
 				row_from5 = delimetrs[index9];
 				row_length5 = (delimetrs[(index9 + 1)] - row_from5);
 				//Проверка на неполную строчку. заполнение @
-				if((row_line11.Length > row_from5)) {
-					if((row_line11.Length >= (row_from5 + row_length5))) {
-						list2retrn.Add(regex_clearCell.Replace(row_line11.Substring(row_from5, row_length5), ""));
+				if((row_line14.Length > row_from5)) {
+					if((row_line14.Length >= (row_from5 + row_length5))) {
+						list2retrn.Add(regex_clearCell.Replace(row_line14.Substring(row_from5, row_length5), ""));
 					} else {
-						list2retrn.Add(regex_clearCell.Replace(row_line11.Substring(row_from5, (row_line11.Length - row_from5)), ""));
+						list2retrn.Add(regex_clearCell.Replace(row_line14.Substring(row_from5, (row_line14.Length - row_from5)), ""));
 					}
 				} else {
 					list2retrn.Add("");
 				}
 			}
 			//Проверка на неполную строчку. заполнение @
-			if((row_line11.Length > delimetrs[delimetrs.Count - 1])) {
-				if((row_line11.Length >= (delimetrs[delimetrs.Count - 1] + (row_line11.Length - delimetrs[delimetrs.Count - 1])))) {
-					list2retrn.Add(regex_clearCell.Replace(row_line11.Substring(delimetrs[delimetrs.Count - 1], (row_line11.Length - delimetrs[delimetrs.Count - 1])), ""));
+			if((row_line14.Length > delimetrs[delimetrs.Count - 1])) {
+				if((row_line14.Length >= (delimetrs[delimetrs.Count - 1] + (row_line14.Length - delimetrs[delimetrs.Count - 1])))) {
+					list2retrn.Add(regex_clearCell.Replace(row_line14.Substring(delimetrs[delimetrs.Count - 1], (row_line14.Length - delimetrs[delimetrs.Count - 1])), ""));
 				} else {
-					list2retrn.Add(regex_clearCell.Replace(row_line11.Substring(delimetrs[delimetrs.Count - 1], (row_line11.Length - delimetrs[delimetrs.Count - 1])), ""));
+					list2retrn.Add(regex_clearCell.Replace(row_line14.Substring(delimetrs[delimetrs.Count - 1], (row_line14.Length - delimetrs[delimetrs.Count - 1])), ""));
 				}
 			} else {
 				list2retrn.Add("");
