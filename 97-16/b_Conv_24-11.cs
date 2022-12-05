@@ -79,17 +79,16 @@ namespace MaxyGames.Generated {
 			string file_data = "";
 			string One_table_data = "";
 			List<string> _rowUnparsed = new List<string>();
-			List<string> _rowUnparsed0 = new List<string>();
 			List<string> tables = new List<string>();
 			List<List<string>> Qtable = new List<List<string>>();
 			Dictionary<string, string> months = new Dictionary<string, string>() { { "ЯНВАРЬ", "1" }, { "ФЕВРАЛЬ", "2" }, { "МАРТ", "3" }, { "АПРЕЛЬ", "4" }, { "МАЙ", "5" }, { "ИЮНЬ", "6" }, { "ИЮЛЬ", "7" }, { "АВГУСТ", "8" }, { "СЕНТЯБРЬ", "9" }, { "ОКТЯБРЬ", "10" }, { "НОЯБРЬ", "11" }, { "ДЕКАБРЬ", "12" } };
 			string N_year_N_month_FromHeader = "";
 			string tmp_tblName = "";
 			if(Regex.IsMatch(Path.GetFileName(path), "(^\\D*)(\\d+)-(\\d+)")) {
-				Year = Regex.Match(Path.GetFileName(path), "(^\\D*)(\\d+)-(\\d+)").Result("$3");
-				Month = Regex.Match(Path.GetFileName(path), "(^\\D*)(\\d+)-(\\d+)").Result("$2");
+				Year = Regex.Match(Path.GetFileName(path), "(^\\D*)(\\d+)\\s*-\\s*(\\d+)").Result("$3");
+				Month = Regex.Match(Path.GetFileName(path), "(^\\D*)(\\d+)\\s*-\\s*(\\d+)").Result("$2");
 				//название поста, добавить сюда же потом проход через bd_names
-				NameOfDB = Regex.Match(Path.GetFileName(path), "(^\\D*)(\\d+)-(\\d+)").Result("$1").Trim();
+				NameOfDB = Regex.Match(Path.GetFileName(path), "(^\\D*)(\\d+)\\s*-\\s*(\\d+)").Result("$1").Trim();
 				//Проверка наличия в списке. если уже есть, то не добавлять, что бы потом лишний раз не бегать
 				if(!(bd_names_array.Contains(NameOfDB))) {
 					//Добавление имени бд для последующего sql инжекта
@@ -97,7 +96,8 @@ namespace MaxyGames.Generated {
 				}
 				file_data = new Regex("^(.*.*).+$", RegexOptions.Multiline).Replace(File.ReadAllText(path), "");
 				//Если есть - то это короткий файл, и пост к тому же
-				if(file_data.Contains("Т А Б Л И Ц Ы    М Е Т Е О Р О Л О Г И Ч Е С К И Х   Н А Б Л Ю Д Е Н И Й       Т М П")) {
+				if(file_data.Contains("Т М П")) {
+					//Посты
 					Debug.Log("Т М П");
 					wet_cor_m = "";
 					//"ВСЕМИРНОЕ"==длинный вариант ТМН. Если нет == короткий
@@ -152,6 +152,7 @@ namespace MaxyGames.Generated {
 						}
 					}
 				} else {
+					//Станции
 					tables = Enumerable.ToList<System.String>(file_data.Trim().Split("Станция", System.StringSplitOptions.RemoveEmptyEntries));
 					foreach(string loopObject2 in tables) {
 						One_table_data = loopObject2;
