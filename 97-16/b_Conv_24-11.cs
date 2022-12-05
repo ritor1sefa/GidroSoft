@@ -84,7 +84,7 @@ namespace MaxyGames.Generated {
 			Dictionary<string, string> months = new Dictionary<string, string>() { { "ЯНВАРЬ", "1" }, { "ФЕВРАЛЬ", "2" }, { "МАРТ", "3" }, { "АПРЕЛЬ", "4" }, { "МАЙ", "5" }, { "ИЮНЬ", "6" }, { "ИЮЛЬ", "7" }, { "АВГУСТ", "8" }, { "СЕНТЯБРЬ", "9" }, { "ОКТЯБРЬ", "10" }, { "НОЯБРЬ", "11" }, { "ДЕКАБРЬ", "12" } };
 			string N_year_N_month_FromHeader = "";
 			string tmp_tblName = "";
-			if(Regex.IsMatch(Path.GetFileName(path), "(^\\D*)(\\d+)-(\\d+)")) {
+			if(Regex.IsMatch(Path.GetFileName(path), "(^\\D*)(\\d+)\\s*-\\s*(\\d+)")) {
 				Year = Regex.Match(Path.GetFileName(path), "(^\\D*)(\\d+)\\s*-\\s*(\\d+)").Result("$3");
 				Month = Regex.Match(Path.GetFileName(path), "(^\\D*)(\\d+)\\s*-\\s*(\\d+)").Result("$2");
 				//название поста, добавить сюда же потом проход через bd_names
