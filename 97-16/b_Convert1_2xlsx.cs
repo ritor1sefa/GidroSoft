@@ -17,11 +17,9 @@ namespace MaxyGames.Generated {
 		public Dictionary<string, SqliteDataReader> sql_readers = new Dictionary<string, SqliteDataReader>();
 		public bool FileNext = true;
 		public string currentFile = "";
-		public int currentFileN = 0;
 		public string currentTable = "";
 		public List<string> Files = new List<string>();
 		public List<string> Tables = new List<string>();
-		public int totalNrows = 0;
 		public Dictionary<string, string> bd_names_raw = new Dictionary<string, string>();
 		public XLWorkbook wb = new XLWorkbook();
 		public IXLWorksheet wSh;
@@ -33,18 +31,12 @@ namespace MaxyGames.Generated {
 		public float cell_float = 0F;
 		public int variable8 = 0;
 		public string tmp_fileNameNormal = "";
+		public GameObject objectVariable;
+		public GameObject objectVariable1;
+		public GameObject objectVariable2;
+		public GameObject objectVariable3;
 
-		private void Start() {
-			Files = new List<string>();
-			Files.Clear();
-			Tables = sql_master_tables("_empty");
-			foreach(string loopObject in Directory.GetFiles(Application.streamingAssetsPath + "/" + "files/bd/", "*.sqlite")) {
-				Files.Add(Path.GetFileNameWithoutExtension(loopObject));
-				Files.Remove("_log");
-				Files.Remove("_empty");
-				Files.Remove("_emptyY");
-			}
-		}
+		private void Start() {}
 
 		/// <summary>
 		/// sqlite запрос на выборку столбца данных по году+месяцу
@@ -59,6 +51,16 @@ namespace MaxyGames.Generated {
 		public void button() {
 			XLWorkbook variable01 = new XLWorkbook();
 			IXLWorksheet variable11 = default(IXLWorksheet);
+			Files = new List<string>();
+			Files.Clear();
+			Tables = sql_master_tables("_empty");
+			foreach(string loopObject in Directory.GetFiles(Application.streamingAssetsPath + "/" + "files/bd/", "*.sqlite")) {
+				Files.Add(Path.GetFileNameWithoutExtension(loopObject));
+				Files.Remove("_log");
+				Files.Remove("_empty");
+				Files.Remove("_emptyY");
+			}
+			objectVariable.gameObject.GetComponent<TMPro.TMP_Text>().text = Files.Count.ToString() + " sqlite dbs";
 			base.StartCoroutine(xlsx_mainLoop());
 		}
 
@@ -180,14 +182,15 @@ namespace MaxyGames.Generated {
 			for(int index1 = 0; index1 < Tables.Count; index1 += 1) {
 				currentTable = Tables[index1];
 				Debug.Log(currentTable);
-				yield return new WaitForSeconds(0.05F);
+				objectVariable1.gameObject.GetComponent<TMPro.TMP_Text>().text = currentTable.ToString();
+				yield return new WaitForEndOfFrame();
 				//Файлы старт
 				currentFile = "";
 				finalTable.Clear();
 				finalTable = new List<List<string>>();
 				for(int index2 = 0; index2 < Files.Count; index2 += 1) {
-					currentFileN = index2;
 					currentFile = Files[index2];
+					objectVariable3.gameObject.GetComponent<TMPro.TMP_Text>().text = (index2 + 1).ToString() + " " + currentFile;
 					//склеиваем из файлов в один массив все строки
 					finalTable.AddRange(sql_getTable(currentFile, currentTable));
 					System.Math.DivRem(finalTable.Count, 10, out variable1);
@@ -195,8 +198,8 @@ namespace MaxyGames.Generated {
 						yield return new WaitForEndOfFrame();
 					}
 				}
-				Debug.Log(finalTable.Count);
-				totalNrows = finalTable.Count;
+				Debug.Log("Строк всего:" + finalTable.Count.ToString());
+				objectVariable2.gameObject.GetComponent<TMPro.TMP_Text>().text = finalTable.Count.ToString();
 				yield return xlsx_save(finalTable);
 			}
 		}
@@ -215,36 +218,43 @@ namespace MaxyGames.Generated {
 						wSh.Cell(row_int, clmn_int).Value = raw_value;
 					} else {
 						//убираем собак и меняем пробелы на подчерки
-						raw_value = new Regex("[@]").Replace(raw_value.Replace("  ", "_").Replace(" ", "_"), "");
+						raw_value = raw_value.Trim().Replace("@", "");
 						if((clmn_int == 2)) {
 							//проверка на дубликатность
-							if(Regex.IsMatch(raw_value, "y(\\d+)_m(\\d+)_double")) {
+							if(raw_value.Contains("_double")) {
 								//повтор есть
 								wSh.Cell(row_int, clmn_int).Value = "повтор";
-								clmn_int = (clmn_int + 1);
-								//год
-								wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)_m(\\d+)").Result("$1");
-								clmn_int = (clmn_int + 1);
-								//месяц
-								wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)_m(\\d+)").Result("$2");
 							} else {
 								//повтора нету
 								wSh.Cell(row_int, clmn_int).Value = "";
+							}
+							//год
+							if(raw_value.Contains("y")) {
 								clmn_int = (clmn_int + 1);
-								if(Regex.IsMatch(raw_value, "y(\\d+)_m(\\d+)")) {
-									//год
-									wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)_m(\\d+)").Result("$1");
-									clmn_int = (clmn_int + 1);
-									//месяц
-									wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)_m(\\d+)").Result("$2");
-								} else {
-									Debug.Log(raw_value);
-								}
+								wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "y(\\d+)").Result("$1");
+							} else {
+								Debug.Log(raw_value);
+							}
+							//месяц
+							if(raw_value.Contains("_m")) {
+								clmn_int = (clmn_int + 1);
+								wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "_m(\\d+)").Result("$1");
+							} else {
+								Debug.Log(raw_value);
+							}
+							//день
+							if(raw_value.Contains("_d")) {
+								clmn_int = (clmn_int + 1);
+								wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "_d(\\d+)").Result("$1");
+							}
+							//час
+							if(raw_value.Contains("_h")) {
+								clmn_int = (clmn_int + 1);
+								wSh.Cell(row_int, clmn_int).Value = Regex.Match(raw_value, "_h(\\d+)").Result("$1");
 							}
 						} else if(float.TryParse(raw_value, out cell_float)) {
 							wSh.Cell(row_int, clmn_int).SetValue<System.Single>(cell_float);
 						} else {
-							//название поста
 							wSh.Cell(row_int, clmn_int).Value = raw_value;
 						}
 					}
