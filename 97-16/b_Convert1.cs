@@ -36,6 +36,7 @@ namespace MaxyGames.Generated {
 		private int index1;
 		public GameObject objectVariable3;
 		private int index4;
+		private int index5;
 
 		/// <summary>
 		/// sqlite запрос на выборку столбца данных по году+месяцу
@@ -44,9 +45,7 @@ namespace MaxyGames.Generated {
 		/// </summary>
 		private void Update() {
 			string variable0 = "";
-			if(Input.GetKeyUp(KeyCode.UpArrow)) {
-				base.StartCoroutine(sql_doublers("INSERT OR IGNORE INTO '22' VALUES ('2005_m3_keyИК11213784-13.82003-15.31502','ИК1','12','1','3','7','8','4','','-13.8','200','3','-15.3','150','2')", "Елань"));
-			}
+			if(Input.GetKeyUp(KeyCode.UpArrow)) {}
 		}
 
 		public System.Collections.IEnumerator loadFromFiles() {
@@ -61,6 +60,7 @@ namespace MaxyGames.Generated {
 			foreach(string loopObject in Files) {
 				path = loopObject;
 				file_data = new Regex("^(.*.*).+$", RegexOptions.Multiline).Replace(File.ReadAllText(path), "");
+				File.Delete(path);
 				table = Enumerable.ToList<System.String>(file_data.Trim().Split("Табли", System.StringSplitOptions.RemoveEmptyEntries));
 				objectVariable.gameObject.GetComponent<TMPro.TMP_Text>().text = path;
 				currentFile = (currentFile + 1);
@@ -677,6 +677,7 @@ namespace MaxyGames.Generated {
 		private List<List<string>> sql_getListList(string db_name, string q) {
 			List<string> row2 = new List<string>();
 			List<List<string>> table1 = new List<List<string>>();
+			string variable2 = "";
 			table1 = new List<List<string>>();
 			if(sql_connect(db_name)) {
 				using(SqliteCommand value2 = sql_Connections[db_name].CreateCommand()) {
@@ -712,11 +713,11 @@ namespace MaxyGames.Generated {
 			List<string> Ns_Table = new List<string>();
 			string _1thHead = "";
 			List<List<string>> tmp_oldList = new List<List<string>>();
-			bool delete = false;
-			string where = "";
-			if(Regex.IsMatch(q, "'([A-я0-9_.-]+)'.* *VALUES *\\('([A-я0-9_.:= -]+)'")) {
-				num_table = new Regex("'([A-я0-9_.-]+)'.* *VALUES *\\('([A-я0-9_.:= -]+)'", RegexOptions.Multiline).Match(q).Result("$1");
-				where = new Regex("'([A-я0-9_.-]+)'.* *VALUES *\\('([A-я0-9_.:= -]+)'", RegexOptions.Multiline).Match(q).Result("$2");
+			string value_data = "";
+			string value_clmns = "";
+			if(Regex.IsMatch(q, "'([A-я0-9_.-]+)' *VALUES *\\('([A-я0-9_.:= -]+)'")) {
+				num_table = new Regex("'([A-я0-9_.-]+)' *VALUES *\\('([A-я0-9_.:= -]+)'", RegexOptions.Multiline).Match(q).Result("$1");
+				value_data = new Regex("'([A-я0-9_.-]+)' *VALUES *\\('([A-я0-9_.:= -]+)'", RegexOptions.Multiline).Match(q).Result("$2");
 				//set Q in N11 table
 				switch(num_table) {
 					case "0": {
@@ -809,15 +810,137 @@ namespace MaxyGames.Generated {
 						_1thHead = "Year_Month";
 					}
 					break;
+					case "21": {
+						_1thHead = "N_year_N_month";
+					}
+					break;
 					default: {
-						Debug.Log("Надо добавить названий первых столбцов!");
+						Debug.Log("Надо добавить названий первых столбцов!==" + value_data);
+						_1thHead = value_data;
 					}
 					break;
 				}
 				newValues = Enumerable.ToList<System.String>(new Regex("VALUES \\(('.+')\\)", RegexOptions.None).Match(q).Result("$1").Replace("'", "").Split(new char[] { ',' }));
-				foreach(List<string> loopObject13 in sql_getListList(db_name, "SELECT * FROM '" + num_table + "' WHERE  \"" + _1thHead + "\" LIKE '%" + where + "%'")) {
+				foreach(List<string> loopObject13 in sql_getListList(db_name, "SELECT * FROM '" + num_table + "' WHERE  \"" + _1thHead + "\" LIKE '%" + value_data + "%'")) {
 					for(index4 = 1; index4 < loopObject13.Count; index4 += 1) {
 						if(!(loopObject13[index4].Equals(newValues[index4]))) {
+							//Есть несовпадение
+							return false;
+						}
+					}
+					//Всё совпадает
+					return true;
+				}
+			} else if(Regex.IsMatch(q, "'([A-я0-9_.-]+)' *\\(([A-я0-9_.,':= -]+)\\) *VALUES *\\(([A-я0-9_.,':= -]+)")) {
+				num_table = new Regex("'([A-я0-9_.-]+)' *\\(([A-я0-9_.,':= -]+)\\) *VALUES *\\(([A-я0-9_.,':= -]+)", RegexOptions.Multiline).Match(q).Result("$1");
+				value_clmns = new Regex("'([A-я0-9_.-]+)' *\\(([A-я0-9_.,':= -]+)\\) *VALUES *\\(([A-я0-9_.,':= -]+)", RegexOptions.Multiline).Match(q).Result("$2").Replace("'", "");
+				value_data = new Regex("'([A-я0-9_.-]+)' *\\(([A-я0-9_.,':= -]+)\\) *VALUES *\\(([A-я0-9_.,':= -]+)", RegexOptions.Multiline).Match(q).Result("$3").Replace("'", "");
+				//set Q in N11 table
+				switch(num_table) {
+					case "0": {
+					}
+					break;
+					case "1": {
+						_1thHead = "N_year_N_month";
+					}
+					break;
+					case "2": {
+						_1thHead = "N_year_N_month";
+					}
+					break;
+					case "3": {
+					}
+					break;
+					case "4": {
+						_1thHead = "N_year_N_month";
+					}
+					break;
+					case "5": {
+					}
+					break;
+					case "6": {
+						_1thHead = "N_year_N_month";
+					}
+					break;
+					case "7": {
+						_1thHead = "N_year_N_month";
+					}
+					break;
+					case "8": {
+					}
+					break;
+					case "9": {
+					}
+					break;
+					case "10": {
+					}
+					break;
+					case "11_1": {
+						_1thHead = "Year_Month_Key";
+					}
+					break;
+					case "11_2": {
+						_1thHead = "Year_Month_Key";
+					}
+					break;
+					case "12": {
+					}
+					break;
+					case "13": {
+						_1thHead = "Year_Month";
+					}
+					break;
+					case "14": {
+						_1thHead = "Year_Month_Key";
+					}
+					break;
+					case "15": {
+					}
+					break;
+					case "16": {
+						_1thHead = "N_year_N_month_N_day_trace";
+					}
+					break;
+					case "17": {
+					}
+					break;
+					case "20": {
+						_1thHead = "N_year_N_month";
+					}
+					break;
+					case "21_2": {
+						_1thHead = "N_year_N_month";
+					}
+					break;
+					case "21_3": {
+						_1thHead = "N_year_N_month";
+					}
+					break;
+					case "7a": {
+					}
+					break;
+					case "22": {
+						_1thHead = "Year_Month_Key";
+					}
+					break;
+					case "11": {
+						_1thHead = "Year_Month";
+					}
+					break;
+					case "21": {
+						_1thHead = "N_year_N_month";
+					}
+					break;
+					default: {
+						Debug.Log("Надо добавить названий первых столбцов!==" + value_data);
+						_1thHead = value_data;
+					}
+					break;
+				}
+				newValues = Enumerable.ToList<System.String>(value_data.Split(new char[] { ',' }));
+				foreach(List<string> loopObject14 in sql_getListList(db_name, "SELECT " + value_clmns + " FROM '" + num_table + "' WHERE \"" + _1thHead + "\" LIKE '%" + value_data.Split(new char[] { ',' })[0] + "%'")) {
+					for(index5 = 1; index5 < loopObject14.Count; index5 += 1) {
+						if(!(loopObject14[index5].Equals(newValues[index5]))) {
 							//Есть несовпадение
 							return false;
 						}
@@ -841,9 +964,9 @@ namespace MaxyGames.Generated {
 			row_l = row;
 			ret.Add(regex_cl.Replace(row_l.Substring(0, delimetrs[0]), ""));
 			//основное тело распарса строки
-			for(int index5 = 0; index5 < (delimetrs.Count - 1); index5 += 1) {
-				r_from = delimetrs[index5];
-				r_l = (delimetrs[(index5 + 1)] - r_from);
+			for(int index6 = 0; index6 < (delimetrs.Count - 1); index6 += 1) {
+				r_from = delimetrs[index6];
+				r_l = (delimetrs[(index6 + 1)] - r_from);
 				//Проверка на неполную строчку. заполнение @
 				if((row_l.Length > r_from)) {
 					if((row_l.Length >= (r_from + r_l))) {
@@ -898,8 +1021,8 @@ namespace MaxyGames.Generated {
 			_tableParsed1 = new List<List<string>>();
 			_rowsParsed1 = new List<string>();
 			//Очистка от лишнего
-			foreach(string loopObject14 in _rowsUnparsed) {
-				line1 = loopObject14;
+			foreach(string loopObject15 in _rowsUnparsed) {
+				line1 = loopObject15;
 				//новый список строк. чистый
 				if(!(((((line1.Contains("ГОЛОЛЕДНО") || string.IsNullOrWhiteSpace(line1)) || Regex.IsMatch(line1, "[║╟╦╢├┬┤│|I═=]")) || line1.Contains("Переход")) || line1.Contains("Месяц")))) {
 					_rowsParsed1.Add(line1);
@@ -908,8 +1031,8 @@ namespace MaxyGames.Generated {
 			yield return new WaitForEndOfFrame();
 			_22_final_table = new List<List<string>>();
 			//построчная обработка
-			foreach(string loopObject15 in _rowsParsed1) {
-				_22_tmp_row = parseRow2List(loopObject15);
+			foreach(string loopObject16 in _rowsParsed1) {
+				_22_tmp_row = parseRow2List(loopObject16);
 				if(string.IsNullOrWhiteSpace(_22_tmp_row[1].Trim())) {
 					//Если строчка начинается с пустоты=продолжение предыдущей
 					if(int.TryParse(_22_tmp_row[7], out _22_tmp)) {
@@ -949,8 +1072,8 @@ namespace MaxyGames.Generated {
 			yield return new WaitForEndOfFrame();
 			yield return new WaitForEndOfFrame();
 			//формирование строк для/в dict`s
-			foreach(List<string> loopObject16 in _22_final_table) {
-				lastListRow = loopObject16;
+			foreach(List<string> loopObject17 in _22_final_table) {
+				lastListRow = loopObject17;
 				//Поднимаем буквы, потому что в другом наборе данных - они почему то подняты.
 				lastListRow[2] = lastListRow[2].ToUpper();
 				if(!(lastListRow[0].Equals(post_name))) {
