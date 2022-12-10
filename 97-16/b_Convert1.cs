@@ -222,7 +222,7 @@ namespace MaxyGames.Generated {
 						//непилимые таблицы
 						foreach(string loopObject5 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
 							tmp_row_raw = loopObject5;
-							if(loopObject5.Trim().ToLower().Contains("Переход".ToLower())) {
+							if(loopObject5.Trim().ToLower().Contains("Переход на следующий месяц".ToLower())) {
 								//если есть в строке "Переход на следующий месяц"
 								tmp_ifNextMonth = "";
 							} else {
@@ -237,7 +237,7 @@ namespace MaxyGames.Generated {
 					//непилимые таблицы
 					foreach(string loopObject5 in One_table_data.Split(System.Environment.NewLine, System.StringSplitOptions.None)) {
 						tmp_row_raw = loopObject5;
-						if(loopObject5.Trim().ToLower().Contains("Переход".ToLower())) {
+						if(loopObject5.Trim().ToLower().Contains("Переход на следующий месяц".ToLower())) {
 							//если есть в строке "Переход на следующий месяц"
 							tmp_ifNextMonth = "";
 						} else {
@@ -1018,13 +1018,14 @@ namespace MaxyGames.Generated {
 			string tmpKey = "";
 			string q1 = "";
 			string tmp_name_bd = "";
+			List<string> variable23 = new List<string>() { "", "", "", "", "" };
 			_tableParsed1 = new List<List<string>>();
 			_rowsParsed1 = new List<string>();
 			//Очистка от лишнего
 			foreach(string loopObject15 in _rowsUnparsed) {
 				line1 = loopObject15;
 				//новый список строк. чистый
-				if(!(((((line1.Contains("ГОЛОЛЕДНО") || string.IsNullOrWhiteSpace(line1)) || Regex.IsMatch(line1, "[║╟╦╢├┬┤│|I═=]")) || line1.Contains("Переход")) || line1.Contains("Месяц")))) {
+				if(!((((line1.Contains("ГОЛОЛЕДНО") || string.IsNullOrWhiteSpace(line1)) || Regex.IsMatch(line1, "[║╟╦╢├┬┤│|I═=]")) || line1.Contains("Месяц")))) {
 					_rowsParsed1.Add(line1);
 				}
 			}
@@ -1033,7 +1034,10 @@ namespace MaxyGames.Generated {
 			//построчная обработка
 			foreach(string loopObject16 in _rowsParsed1) {
 				_22_tmp_row = parseRow2List(loopObject16);
-				if(string.IsNullOrWhiteSpace(_22_tmp_row[1].Trim())) {
+				if(string.Join("", _22_tmp_row).Contains("Переход")) {
+					variable23[0] = _22_tmp_row[0];
+					_22_final_table.Add(variable23);
+				} else if(string.IsNullOrWhiteSpace(_22_tmp_row[1].Trim())) {
 					//Если строчка начинается с пустоты=продолжение предыдущей
 					if(int.TryParse(_22_tmp_row[7], out _22_tmp)) {
 						//6й стобец
@@ -1042,7 +1046,7 @@ namespace MaxyGames.Generated {
 							_22_final_table[_22_final_table.Count - 1][7] = _22_7th.ToString();
 						}
 					} else {
-						Debug.Log("7й столбей не парсанулся! " + _22_tmp_row[7]);
+						Debug.Log("7й столбей не парсанулся! " + _22_tmp_row[7] + "=" + string.Join("+", _22_tmp_row));
 					}
 					//Если строчка начинается с пустоты=продолжение предыдущей
 					if(int.TryParse(_22_tmp_row[8], out _22_tmp)) {
@@ -1052,7 +1056,7 @@ namespace MaxyGames.Generated {
 							_22_final_table[_22_final_table.Count - 1][8] = _22_8th.ToString();
 						}
 					} else {
-						Debug.Log("7й столбей не парсанулся! " + _22_tmp_row[8]);
+						Debug.Log("8й столбей не парсанулся! " + _22_tmp_row[8] + "=" + string.Join("+", _22_tmp_row));
 					}
 					//Если строчка начинается с пустоты=продолжение предыдущей
 					if(int.TryParse(_22_tmp_row[9], out _22_tmp)) {
@@ -1065,7 +1069,7 @@ namespace MaxyGames.Generated {
 				} else {
 					int.TryParse(_22_tmp_row[7], out _22_7th);
 					int.TryParse(_22_tmp_row[8], out _22_8th);
-					int.TryParse(_22_tmp_row[9], out _22_8th);
+					int.TryParse(_22_tmp_row[9], out _22_9th);
 					_22_final_table.Add(_22_tmp_row);
 				}
 			}
@@ -1084,47 +1088,49 @@ namespace MaxyGames.Generated {
 						post_name = lastListRow[0].Trim();
 					}
 				}
-				//кусок для 2016+ годов
-				if(Regex.IsMatch(post_name, "^\\s*(\\S+) *(\\d{4})")) {
-					N_year_N_month = "y" + Regex.Match(post_name, "^\\s*(\\S+) *(\\d{4})", RegexOptions.None).Result("$2") + "_m" + months[Regex.Match(post_name, "^\\s*(\\S+) *(\\d{4})", RegexOptions.None).Result("$1")];
-				} else {
-					if(string.IsNullOrWhiteSpace(N_year_N_month)) {
-						N_year_N_month = N_year_N_month_FromHeader;
-					}
-					if(string.IsNullOrWhiteSpace(lastListRow[0])) {
-						Debug.Log("Пустая линия в 22й таблице!");
+				if(!((lastListRow.Count < 10))) {
+					//кусок для 2016+ годов
+					if(Regex.IsMatch(post_name, "^\\s*(\\S+) *(\\d{4})")) {
+						N_year_N_month = "y" + Regex.Match(post_name, "^\\s*(\\S+) *(\\d{4})", RegexOptions.None).Result("$2") + "_m" + months[Regex.Match(post_name, "^\\s*(\\S+) *(\\d{4})", RegexOptions.None).Result("$1")];
 					} else {
-						tmp_name_bd = Regex.Match(lastListRow[0], "\\D*\\d+\\.(.+)", RegexOptions.None).Result("$1").Trim().Replace(',', '_').ToLower();
-						if(bd_names.ContainsKey(tmp_name_bd)) {
-							db_name = bd_names[tmp_name_bd];
-							lastListRow.RemoveAt(1);
-							lastListRow.RemoveAt(0);
-							//N22
-							q1 = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + "" + "" + N_year_N_month + "" + "" + "_k" + string.Join("", Enumerable.Select<System.String, System.String>(lastListRow, (string parameterValues) => {
-								return parameterValues.Trim();
-							})) + "','" + string.Join("','", Enumerable.Select<System.String, System.String>(lastListRow, (string parameterValues) => {
-								return parameterValues.Trim();
-							})) + "')";
-							if((q1.Length > 10)) {
-								//если повтор
-								if(sql_insertQ(db_name, q1).Equals(0)) {
-									//Если есть несовпадения значений то дублируем
-									if(!(sql_doublers(q1, db_name))) {
-										//еслипрямь и дубликата дубликат есть, жжесть
-										Debug.Log("1Повтор в бд:===" + db_name + "===" + N_table + "===" + q1);
-										//если повтор
-										if(sql_insertQ(db_name1, q1.Replace(N_year_N_month, N_year_N_month + "_double")).Equals(0)) {
+						if(string.IsNullOrWhiteSpace(N_year_N_month)) {
+							N_year_N_month = N_year_N_month_FromHeader;
+						}
+						if(string.IsNullOrWhiteSpace(lastListRow[0])) {
+							Debug.Log("Пустая линия в 22й таблице!");
+						} else {
+							tmp_name_bd = Regex.Match(lastListRow[0], "\\D*\\d+\\.(.+)", RegexOptions.None).Result("$1").Trim().Replace(',', '_').ToLower();
+							if(bd_names.ContainsKey(tmp_name_bd)) {
+								db_name = bd_names[tmp_name_bd];
+								lastListRow.RemoveAt(1);
+								lastListRow.RemoveAt(0);
+								//N22
+								q1 = "INSERT OR IGNORE INTO '" + N_table + "' " + "VALUES ('" + "" + "" + N_year_N_month + "" + "" + "_k" + string.Join("", Enumerable.Select<System.String, System.String>(lastListRow, (string parameterValues) => {
+									return parameterValues.Trim();
+								})) + "','" + string.Join("','", Enumerable.Select<System.String, System.String>(lastListRow, (string parameterValues) => {
+									return parameterValues.Trim();
+								})) + "')";
+								if((q1.Length > 10)) {
+									//если повтор
+									if(sql_insertQ(db_name, q1).Equals(0)) {
+										//Если есть несовпадения значений то дублируем
+										if(!(sql_doublers(q1, db_name))) {
 											//еслипрямь и дубликата дубликат есть, жжесть
-											Debug.Log("2Повтор в бд:===" + db_name + "===" + N_table + "===" + q1);
+											Debug.Log("1Повтор в бд:===" + db_name + "===" + N_table + "===" + q1);
+											//если повтор
+											if(sql_insertQ(db_name1, q1.Replace(N_year_N_month, N_year_N_month + "_double")).Equals(0)) {
+												//еслипрямь и дубликата дубликат есть, жжесть
+												Debug.Log("2Повтор в бд:===" + db_name + "===" + N_table + "===" + q1);
+											}
 										}
 									}
 								}
+							} else {
+								Debug.Log(tmp_name_bd);
 							}
-						} else {
-							Debug.Log(tmp_name_bd);
 						}
+						yield return new WaitForEndOfFrame();
 					}
-					yield return new WaitForEndOfFrame();
 				}
 			}
 			return _tableParsed1;
