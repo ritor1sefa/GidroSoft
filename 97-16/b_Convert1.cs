@@ -833,7 +833,7 @@ namespace MaxyGames.Generated {
 				}
 			} else if(Regex.IsMatch(q, "'([A-я0-9_.-]+)' *\\(([A-я0-9_.,':= -]+)\\) *VALUES *\\(([A-я0-9_.,':= -]+)")) {
 				num_table = new Regex("'([A-я0-9_.-]+)' *\\(([A-я0-9_.,':= -]+)\\) *VALUES *\\(([A-я0-9_.,':= -]+)", RegexOptions.Multiline).Match(q).Result("$1");
-				value_clmns = new Regex("'([A-я0-9_.-]+)' *\\(([A-я0-9_.,':= -]+)\\) *VALUES *\\(([A-я0-9_.,':= -]+)", RegexOptions.Multiline).Match(q).Result("$2").Replace("'", "");
+				value_clmns = new Regex("'([A-я0-9_.-]+)' *\\(([A-я0-9_.,':= -]+)\\) *VALUES *\\(([A-я0-9_.,':= -]+)", RegexOptions.Multiline).Match(q).Result("$2").Replace("'", "\"");
 				value_data = new Regex("'([A-я0-9_.-]+)' *\\(([A-я0-9_.,':= -]+)\\) *VALUES *\\(([A-я0-9_.,':= -]+)", RegexOptions.Multiline).Match(q).Result("$3").Replace("'", "");
 				//set Q in N11 table
 				switch(num_table) {
